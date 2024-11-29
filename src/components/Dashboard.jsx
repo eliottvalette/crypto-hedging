@@ -1,29 +1,6 @@
 import { useState, useEffect, useRef, memo } from 'react';
-import { Line } from 'react-chartjs-2';
 import axios from 'axios';
-import { calculatePnlSpot } from '../utils/hedging';
 
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend
-} from 'chart.js';
-
-// Register Chart.js components
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend
-);
 
 function Dashboard() {
   const [marketData, setMarketData] = useState(null);
@@ -81,7 +58,7 @@ function Dashboard() {
               <p>Current BTC Price: {marketData && marketData.lastPrice ? `$${parseFloat(marketData.lastPrice).toLocaleString()}` : 'N/A'}</p>
       </div>
       <div className="chart-container" ref={container}>
-        <div className="chart-container__widget" style={{ height: "calc(100% - 32px)", width: "100%" }}></div>
+        <div className="chart-container__widget"></div>
       </div>
     </>
   );
