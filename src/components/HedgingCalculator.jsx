@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { calculateNetPnl } from '../utils/hedging';
-import fetchHistoricalData from '../utils/data';
+// import fetchHistoricalData from '../utils/data';
 
 
 const HedgingCalculator = () => {
