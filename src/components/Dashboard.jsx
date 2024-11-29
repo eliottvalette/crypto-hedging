@@ -1,9 +1,9 @@
-// src/components/Dashboard.jsx
-
 import { useEffect, useState } from 'react';
 import { Line } from 'react-chartjs-2';
 import axios from 'axios';
 import { calculatePnlSpot } from '../utils/hedging';
+import fetchHistoricalData from '../utils/data';
+
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -15,7 +15,7 @@ import {
   Legend
 } from 'chart.js';
 
-// Enregistrement des composants nécessaires de Chart.js
+// Register Chart.js components
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -27,7 +27,7 @@ ChartJS.register(
 );
 
 function Dashboard() {
-  // États pour les données de marché, les données du graphique, les erreurs et le chargement
+  // States for market data, chart data, errors, and loading
   const [marketData, setMarketData] = useState(null);
   const [chartData, setChartData] = useState({
     labels: [],
@@ -36,19 +36,19 @@ function Dashboard() {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Effet pour récupérer les données de marché depuis l'API de Binance
+  // Fetch market data from Binance API
   useEffect(() => {
     const fetchMarketData = async () => {
       try {
         const response = await axios.get('https://api.binance.com/api/v3/ticker/24hr', {
           params: { symbol: 'BTCUSDT' }
         });
-        console.log('Données de marché reçues:', response.data); // Pour le débogage
+        console.log('Market Data:', response.data); // Debugging
         setMarketData(response.data);
         setLoading(false);
       } catch (error) {
-        console.error('Erreur lors de la récupération des données de marché :', error);
-        setError('Impossible de récupérer les données de marché.');
+        console.error('Error fetching market data:', error);
+        setError('Unable to fetch market data.');
         setLoading(false);
       }
     };
@@ -56,49 +56,65 @@ function Dashboard() {
     fetchMarketData();
   }, []);
 
-  // Effet pour configurer les données du graphique (statique pour l'exemple)
+  // Fetch historical BTC price data
   useEffect(() => {
-    const labels = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin'];
-    const data = {
-      labels,
-      datasets: [
-        {
-          label: 'Prix BTC',
-          data: [30000, 40000, 32000, 47000, 48000, 55000], // Remplacez par des données dynamiques si nécessaire
-          borderColor: 'rgba(75, 192, 192, 1)',
-          backgroundColor: 'rgba(75, 192, 192, 0.2)',
-          fill: true,
-          tension: 0.4
+    const fetchHistoricalBTC = async () => {
+      try {
+        const data = await fetchHistoricalData('BTC/USD', '2023-01-01', '2023-12-31', '1Day');
+        if (data) {
+          const labels = data.map(bar => new Date(bar.t).toLocaleDateString());
+          const prices = data.map(bar => bar.c);
+  
+          setChartData({
+            labels,
+            datasets: [
+              {
+                label: 'BTC Price',
+                data: prices,
+                borderColor: 'rgba(75, 192, 192, 1)',
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                fill: true,
+                tension: 0.4,
+              },
+            ],
+          });
+        } else {
+          setError('No historical data available.');
         }
-      ]
+      } catch (error) {
+        console.error('Error fetching historical data:', error);
+        setError('Unable to fetch historical data.');
+      }
     };
-    setChartData(data);
+  
+    fetchHistoricalBTC();
   }, []);
+  
 
-  // Variables pour le calcul P&L Spot
-  const Q = 1; // Quantité
-  const P_spot_achat = 95_000; // Prix d'achat spot
-  const P_spot_vente = marketData && marketData.lastPrice ? parseFloat(marketData.lastPrice) : P_spot_achat; // Prix de vente spot (ou prix d'achat si non disponible)
-  const pnlSpot = calculatePnlSpot(Q, P_spot_achat, P_spot_vente); // Calcul du P&L Spot
+  // Calculate P&L Spot
+  const Q = 1; // Quantity
+  const P_spot_achat = 95_000; // Spot buy price
+  const P_spot_vente = marketData && marketData.lastPrice ? parseFloat(marketData.lastPrice) : P_spot_achat; // Spot sell price (or buy price if not available)
+  const pnlSpot = calculatePnlSpot(Q, P_spot_achat, P_spot_vente); // Calculate P&L Spot
 
   return (
     <div className="dashboard">
-      <h2>Tableau de Bord</h2>
+      <h2>Dashboard</h2>
       
-      {/* Gestion des états de chargement et d'erreur */}
+      {/* Loading and error states */}
       {loading ? (
-        <p>Chargement des données...</p>
+        <p>Loading data...</p>
       ) : error ? (
         <p className="error">{error}</p>
       ) : (
         <>
-          {/* Informations sur le marché */}
+          {/* Market information */}
           <div className="market-info">
-            <p>Prix Actuel BTC : {marketData && marketData.lastPrice ? `$${parseFloat(marketData.lastPrice).toLocaleString()}` : 'N/A'}</p>
-            <p>P&L Spot : ${pnlSpot.toLocaleString()}</p>
+            <p>Current BTC Price: {marketData && marketData.lastPrice ? `$${parseFloat(marketData.lastPrice).toLocaleString()}` : 'N/A'}</p>
+            <p>P&L Spot: ${pnlSpot.toLocaleString()}</p>
           </div>
           
-          {/* Conteneur du graphique */}
+          {/* Chart container */}
           <div className="chart-container">
             {chartData.datasets.length > 0 ? (
               <Line 
@@ -111,13 +127,13 @@ function Dashboard() {
                     },
                     title: {
                       display: true,
-                      text: 'Évolution du Prix du BTC',
+                      text: 'BTC Price Evolution',
                     },
                   },
                 }}
               />
             ) : (
-              <p>Chargement du graphique...</p>
+              <p>Loading chart...</p>
             )}
           </div>
         </>

@@ -1,5 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { calculateNetPnl } from '../utils/hedging';
+import fetchHistoricalData from '../utils/data';
+
 
 const HedgingCalculator = () => {
     const [inputs, setInputs] = useState({
@@ -22,7 +24,7 @@ const HedgingCalculator = () => {
         setInputs({ ...inputs, [name]: parseFloat(value) });
     };
 
-    const calculate = () => {
+    const calculate = async () => {
         const result = calculateNetPnl(
             inputs.Q, inputs.P_spot_achat, inputs.P_spot_vente,
             inputs.P_futures_entree, inputs.P_futures_sortie,
@@ -30,6 +32,10 @@ const HedgingCalculator = () => {
         );
         setNetPnl(result);
     };
+
+    useEffect(() => {
+        calculate(); // Recalculate on initial render
+    }, [inputs]);
 
     return (
         <div className="calculator-container">
