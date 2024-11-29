@@ -1,29 +1,71 @@
 import { useState } from 'react';
-import { calculateNetPnl } from '../utils/hedging';
+import { calculatePayout } from '../utils/hedging';
 
 const HedgingCalculator = () => {
-    const [symbol, setSymbol] = useState('');
-    const [amount, setAmount] = useState('');
-    const [price, setPrice] = useState('');
-    const [proportion, setProportion] = useState(0);
-    const [hedgeKind, setHedgeKind] = useState('spot');
+    const [quantity, setQuantity] = useState('');
+    const [spotEntryPrice, setSpotEntryPrice] = useState('');
+    const [futuresEntryPrice, setFuturesEntryPrice] = useState('');
+    const [hedgingRatio, setHedgingRatio] = useState(0.5); // Default 50% hedging
 
-    const isSpot = hedgeKind === 'spot';
-    console.log('symbol, amount, proportion, hedgeKind:', symbol, amount, proportion, hedgeKind);
+    const [spotPayout, setSpotPayout] = useState(null);
+    const [hedgedPayout, setHedgedPayout] = useState(null);
+
+    const handleCalculate = () => {
+        const Q = parseFloat(quantity) || 0;
+        const P_spot_achat = parseFloat(spotEntryPrice) || 0;
+        const P_futures_entree = parseFloat(futuresEntryPrice) || 0;
+
+        // Call the calculation function
+        const { spotPayout, hedgedPayout } = calculatePayout(
+            Q,
+            P_spot_achat,
+            P_futures_entree,
+            hedgingRatio
+        );
+
+        setSpotPayout(spotPayout.toFixed(2));
+        setHedgedPayout(hedgedPayout.toFixed(2));
+    };
 
     return (
         <div className="calculator-container">
-            <div className="buttons-container">
-                <button className={isSpot ? 'active' : ''} onClick={() => setHedgeKind('spot')}> Spot </button>
-                <button  className={!isSpot ? 'active' : ''} onClick={() => setHedgeKind('future')}> Future </button>
-            </div>
-            <h1>Hedging Calculator ({hedgeKind === 'spot' ? 'Spot' : 'Future'})</h1>
-            <input name="Symbol" value={symbol} onChange={(e) => setSymbol(e.target.value)} placeholder="Symbol" />
-            <input name="Amount" value={amount} onChange={(e) => setAmount(parseFloat(e.target.value))} placeholder="Amount To Invest ($)" />
-            <input name="Price" value={price} onChange={(e) => setPrice(parseFloat(e.target.value))} placeholder="Spot Price ($)" />
+            <h1>Hedging Calculator</h1>
+            <input
+                type="number"
+                placeholder="Quantity (Q)"
+                value={quantity}
+                onChange={(e) => setQuantity(e.target.value)}
+            />
+            <input
+                type="number"
+                placeholder="Spot Entry Price ($)"
+                value={spotEntryPrice}
+                onChange={(e) => setSpotEntryPrice(e.target.value)}
+            />
+            <input
+                type="number"
+                placeholder="Futures Entry Price ($)"
+                value={futuresEntryPrice}
+                onChange={(e) => setFuturesEntryPrice(e.target.value)}
+            />
+            <label>Hedging Ratio (h): {hedgingRatio}</label>
+            <input
+                type="range"
+                min="0"
+                max="1"
+                step="0.01"
+                value={hedgingRatio}
+                onChange={(e) => setHedgingRatio(e.target.value)}
+            />
+            <button onClick={handleCalculate}>Calculate</button>
 
-            <label>Hedging Ratio (h):</label>
-            <input type="range" name="h" min="0" max="1" step="0.01" value={proportion} onChange={(e) => setProportion(parseFloat(e.target.value) || 0)} />
+            {spotPayout !== null && (
+                <div>
+                    <h2>Results</h2>
+                    <p>Spot-Only Payout: ${spotPayout}</p>
+                    <p>Hedged Payout: ${hedgedPayout}</p>
+                </div>
+            )}
         </div>
     );
 };

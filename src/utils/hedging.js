@@ -1,91 +1,34 @@
-// hedging.js
+export function calculatePayout (quantity, spotEntryPrice, futuresEntryPrice, hedgingRatio){
+    const Q = parseFloat(quantity) || 0;
+    const P_spot_achat = parseFloat(spotEntryPrice) || 0;
+    const P_futures_entree = parseFloat(futuresEntryPrice) || 0;
+    const h = parseFloat(hedgingRatio) || 0;
 
-/**
- * Calcul du Profit & Loss (P/L) sur le marché Spot
- * @param {number} Q - Quantité de l'actif
- * @param {number} P_spot_achat - Prix d'achat sur le marché spot
- * @param {number} P_spot_vente - Prix de vente sur le marché spot
- * @returns {number} P/L Spot
- */
-export const calculatePnlSpot = (Q, P_spot_achat, P_spot_vente) => {
-    return Q * (P_spot_vente - P_spot_achat);
-};
+    // Define fee rates
+    const F_spot = 0.001; // 0.1%
+    const F_futures = 0.0004; // 0.04%
+    const F_funding = 0.0001; // 0.01% (example)
+    const T = 1; // Holding period (1 interval)
 
-/**
- * Calcul du Profit & Loss (P/L) sur le marché Futures
- * @param {number} Q - Quantité de l'actif
- * @param {number} h - Ratio de couverture
- * @param {number} P_futures_entree - Prix d'entrée sur les futures
- * @param {number} P_futures_sortie - Prix de sortie sur les futures
- * @returns {number} P/L Futures
- */
-export const calculatePnlFutures = (Q, h, P_futures_entree, P_futures_sortie) => {
-    return -Q * h * (P_futures_sortie - P_futures_entree);
-};
+    // Simulate a 10% market increase
+    const priceChangePercent = 10;
+    const P_spot_vente = P_spot_achat * (1 + priceChangePercent / 100);
+    const P_futures_sortie = P_spot_vente;
 
+    // Spot-only P&L
+    const P_L_spot = Q * (P_spot_vente - P_spot_achat);
+    const Frais_spot = Q * P_spot_achat * F_spot;
+    const payoutSpot = P_L_spot - Frais_spot;
 
-/**
- * Calcul des frais de trading spot
- * @param {number} Q - Quantité de l'actif
- * @param {number} P_spot_achat - Prix d'achat sur le marché spot
- * @param {number} F_spot - Taux de frais de trading spot
- * @returns {number} Frais Spot
- */
-export const calculateSpotFees = (Q, P_spot_achat, F_spot) => {
-    return Q * P_spot_achat * F_spot;
-};
+    // Hedged P&L
+    const P_L_futures = -Q * h * (P_futures_sortie - P_futures_entree);
+    const Paiement_financement = Q * h * P_futures_entree * F_funding * T;
+    const Frais_futures = Q * h * P_futures_entree * F_futures;
+    const Frais_totaux = Frais_spot + Frais_futures + Paiement_financement;
+    const payoutHedged = P_L_spot + P_L_futures - Frais_totaux;
 
-/**
- * Calcul des frais de trading futures
- * @param {number} Q - Quantité de l'actif
- * @param {number} h - Ratio de couverture
- * @param {number} P_futures_entree - Prix d'entrée sur les futures
- * @param {number} F_futures - Taux de frais de trading futures
- * @returns {number} Frais Futures
- */
-export const calculateFuturesFees = (Q, h, P_futures_entree, F_futures) => {
-    return Q * h * P_futures_entree * F_futures;
-};
+    console.log('Value just before return : ', payoutSpot, payoutHedged);
 
-/**
- * Paiements de financement pour futures
- * @param {number} Q - Quantité de l'actif
- * @param {number} h - Ratio de couverture
- * @param {number} P_mark - Prix de référence pour le financement
- * @param {number} F_funding - Taux de financement
- * @param {number} T - Durée de détention
- * @returns {number} Paiements de financement
- */
-export const calculateFundingPayments = (Q, h, P_mark, F_funding, T) => {
-    return Q * h * P_mark * F_funding * T;
-};
-
-
-/**
- * Calcul du P&L Net
- * @param {number} Q - Quantité de l'actif
- * @param {number} P_spot_achat - Prix d'achat sur le marché spot
- * @param {number} P_spot_vente - Prix de vente sur le marché spot
- * @param {number} P_futures_entree - Prix d'entrée sur les futures
- * @param {number} P_futures_sortie - Prix de sortie sur les futures
- * @param {number} F_spot - Taux de frais de trading spot
- * @param {number} F_futures - Taux de frais de trading futures
- * @param {number} F_funding - Taux de financement
- * @param {number} T - Durée de détention
- * @param {number} h - Ratio de couverture
- * @returns {number} P&L Net
- */
-export const calculateNetPnl = (
-    Q, P_spot_achat, P_spot_vente,
-    P_futures_entree, P_futures_sortie,
-    F_spot, F_futures, F_funding, T, h
-) => {
-    const pnlSpot = calculatePnlSpot(Q, P_spot_achat, P_spot_vente);
-    const pnlFutures = calculatePnlFutures(Q, h, P_futures_entree, P_futures_sortie);
-    const spotFees = calculateSpotFees(Q, P_spot_achat, F_spot);
-    const futuresFees = calculateFuturesFees(Q, h, P_futures_entree, F_futures);
-    const fundingPayments = calculateFundingPayments(Q, h, P_futures_entree, F_funding, T);
-    const totalFees = spotFees + futuresFees + fundingPayments;
-
-    return pnlSpot + pnlFutures - totalFees;
-};
+    return { payoutSpot, payoutHedged };
+}
+    
