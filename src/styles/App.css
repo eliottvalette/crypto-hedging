@@ -160,23 +160,6 @@ body {
 }
 
 /* Button Styling */
-.calculator-container button {
-  width: 100%;
-  padding: 10px;
-  background: #007bff;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background 0.3s ease;
-}
-
-.calculator-container button:hover {
-  background: #0056b3;
-}
-
-/* Result Display */
 .calculator-container p {
   font-size: 1.1rem;
   text-align: center;
@@ -188,8 +171,16 @@ body {
   border-radius: 5px;
 }
 
+.buttons-container{
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  margin-top: 20px;
+  padding: 10px 0;
+}
 
 .buttons-container button {
+  width: 100%;
   padding: 10px 20px;
   margin: 5px;
   font-size: 1rem;
