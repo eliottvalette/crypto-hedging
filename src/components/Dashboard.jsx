@@ -25,7 +25,7 @@ function Dashboard() {
   // Curve Chart
   const container = useRef();
   useEffect(() => {
-    if (!container.current.querySelector("script")) {
+    if (container.current && !container.current.querySelector("script")) {
       const script = document.createElement("script");
       script.src = "https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js";
       script.type = "text/javascript";
@@ -45,10 +45,11 @@ function Dashboard() {
         }`;
       container.current.appendChild(script);
     }
-
+  
     return () => {
-      // Cleanup any existing charts if necessary
-      container.current.innerHTML = ''; // Clear the container
+      if (container.current) {
+        container.current.innerHTML = ''; // Clear the container
+      }
     };
   }, []);
 

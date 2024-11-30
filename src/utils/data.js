@@ -22,3 +22,25 @@ export async function fetchHistoricalData(symbol, startDate, endDate, timeframe)
     return null;
   }
 }
+
+export async function getSpotPrice(symbol) {
+  const url = `https://api.binance.com/api/v3/ticker/price?symbol=${symbol}`;
+  try {
+      const response = await axios.get(url);
+      console.log(`Prix spot (${symbol}):`, response.data.price);
+      return parseFloat(response.data.price);
+  } catch (error) {
+      console.error('Erreur lors de la récupération du prix spot:', error.message);
+  }
+}
+
+export async function getFuturesPrice(symbol) {
+  const url = `https://fapi.binance.com/fapi/v1/ticker/price?symbol=${symbol}`;
+  try {
+      const response = await axios.get(url);
+      console.log(`Prix futures (${symbol}):`, response.data.price);
+      return parseFloat(response.data.price);
+  } catch (error) {
+      console.error('Erreur lors de la récupération du prix futures:', error.message);
+  }
+}
