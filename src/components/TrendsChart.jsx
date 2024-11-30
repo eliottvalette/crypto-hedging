@@ -20,7 +20,7 @@ const TrendsChart = ({ trend, quantity, hedgingRatio, type, symbol, initialMargi
   }, [symbol]);
 
   // Adjust series data and calculate payouts
-  const adjustedSeriesData = trends[trend].map((dataPoint, index, array) => {
+  const adjustedSeriesData = trends[trend].map((dataPoint) => {
     const [open, high, low, close] = dataPoint.y.map((value) =>
       (value * spotEntryPrice / 100).toFixed(2)
     );
