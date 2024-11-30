@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@alpacahq/alpaca-trade-api": "^3.1.2",
+    "apexcharts": "^4.1.0",
     "axios": "^1.7.8",
     "chart.js": "^4.4.6",
     "chartjs-adapter-date-fns": "^3.0.0",
@@ -18,11 +19,12 @@
     "dotenv": "^16.4.5",
     "lightweight-charts": "^4.2.1",
     "react": "^18.3.1",
+    "react-apexcharts": "^1.6.0",
     "react-chartjs-2": "^5.2.0",
-    "react-crypto-chart": "^0.0.6",
     "react-dom": "^18.3.1",
     "react-router-dom": "^7.0.1",
     "react-use-websocket": "^4.11.1",
+    "recharts": "^2.13.3",
     "rollup-plugin-node-polyfills": "^0.2.1"
   },
   "devDependencies": {

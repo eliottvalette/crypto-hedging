@@ -9,7 +9,7 @@ export const FEE_RATES = {
 };
 
 // Calculate payouts for Futures Hedging
-export function calculatePayout_Future(quantity, spotEntryPrice, futuresEntryPrice, hedgingRatio, priceChangePercent) {
+export function calculatePayoutFuture(quantity, spotEntryPrice, futuresEntryPrice, hedgingRatio, priceChangePercent) {
 
     ////////////////////////////////////////////
     const Q = parseFloat(quantity) || 0;
@@ -22,8 +22,6 @@ export function calculatePayout_Future(quantity, spotEntryPrice, futuresEntryPri
         return { spotPayout: 0, hedgedPayout: 0 };
     }
     ////////////////////////////////////////////
-
-
 
     // Calculate exit spot price based on price change
     const P_spot_vente = P_spot_achat * (1 + priceChangePercent / 100);
@@ -45,7 +43,7 @@ export function calculatePayout_Future(quantity, spotEntryPrice, futuresEntryPri
 }
 
 // Calculate payouts for Short Position Hedging
-export function calculatePayout_Short(quantity, spotEntryPrice, spotExitPrice, hedgingRatio, initialMargin) {
+export function calculatePayoutShort(quantity, spotEntryPrice, spotExitPrice, hedgingRatio, initialMargin) {
     const Q = parseFloat(quantity) || 0;
     const P_spot_achat = parseFloat(spotEntryPrice) || 0;
     const P_spot_vente = parseFloat(spotExitPrice) || 0;

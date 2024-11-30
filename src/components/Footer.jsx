@@ -1,7 +1,7 @@
 function Footer() {
   return (
     <footer className="footer">
-      <p>&copy; {new Date().getFullYear()} Crypto Hedge. Tous droits réservés.</p>
+      <p>&copy; {new Date().getFullYear()} Crypto Hedge. All rights reserved.</p>
     </footer>
   );
 }
