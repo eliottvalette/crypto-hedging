@@ -121,7 +121,6 @@ const HedgingCalculator = () => {
     };
 
     return (
-        <div className="calculator-wrapper">
             <div className="calculator-container">
                 <div className="buttons-container">
                     <button
@@ -182,22 +181,27 @@ const HedgingCalculator = () => {
                         />
                         <button onClick={handleCalculateShort}>Calculate</button>
 
-                        {spotPayouts.up !== null && (
-                            <div>
+                        {spotPayouts.up !== null && (                            
+                            <div className="results-container">
                                 <h2>Results for Short Position</h2>
                                 <p>Optimal Leverage: {optimalLeverage}</p>
-
-                                <h3>Up Scenario (+10%)</h3>
-                                <p>Spot Payout: ${spotPayouts.up}</p>
-                                <p>Hedged Payout: ${hedgedPayouts.up}</p>
-
-                                <h3>Down Scenario (-10%)</h3>
-                                <p>Spot Payout: ${spotPayouts.down}</p>
-                                <p>Hedged Payout: ${hedgedPayouts.down}</p>
-
-                                <h3>Neutral Scenario (0%)</h3>
-                                <p>Spot Payout: ${spotPayouts.neutral}</p>
-                                <p>Hedged Payout: ${hedgedPayouts.neutral}</p>
+                                <div className="results-types-container">
+                                    <div className="results-up">
+                                        <h3>Up Scenario (+10%)</h3>
+                                        <p>Spot Payout: ${spotPayouts.up}</p>
+                                        <p>Hedged Payout: ${hedgedPayouts.up}</p>
+                                    </div>
+                                    <div className="results-down">
+                                        <h3>Down Scenario (-10%)</h3>
+                                        <p>Spot Payout: ${spotPayouts.down}</p>
+                                        <p>Hedged Payout: ${hedgedPayouts.down}</p>
+                                    </div>
+                                    <div className="results-neutral">
+                                        <h3>Neutral Scenario (0%)</h3>
+                                        <p>Spot Payout: ${spotPayouts.neutral}</p>
+                                        <p>Hedged Payout: ${hedgedPayouts.neutral}</p>
+                                    </div>
+                                </div>
                             </div>
                         )}
                     </>
@@ -246,20 +250,25 @@ const HedgingCalculator = () => {
                         <button onClick={handleCalculateFuture}>Calculate</button>
 
                         {spotPayouts.up !== null && (
-                            <div>
+                            <div className="results-container">
                                 <h2>Futures Hedging Results</h2>
-
-                                <h3>Up Scenario (+10%)</h3>
-                                <p>Spot Payout: ${spotPayouts.up}</p>
-                                <p>Hedged Payout: ${hedgedPayouts.up}</p>
-
-                                <h3>Down Scenario (-10%)</h3>
-                                <p>Spot Payout: ${spotPayouts.down}</p>
-                                <p>Hedged Payout: ${hedgedPayouts.down}</p>
-
-                                <h3>Neutral Scenario (0%)</h3>
-                                <p>Spot Payout: ${spotPayouts.neutral}</p>
-                                <p>Hedged Payout: ${hedgedPayouts.neutral}</p>
+                                <div className="results-types-container">
+                                    <div className="results-up">
+                                        <h3>Up Scenario (+10%)</h3>
+                                        <p>Spot Payout: ${spotPayouts.up}</p>
+                                        <p>Hedged Payout: ${hedgedPayouts.up}</p>
+                                    </div>
+                                    <div className="results-down">
+                                        <h3>Down Scenario (-10%)</h3>
+                                        <p>Spot Payout: ${spotPayouts.down}</p>
+                                        <p>Hedged Payout: ${hedgedPayouts.down}</p>
+                                    </div>
+                                    <div className="results-neutral">
+                                        <h3>Neutral Scenario (0%)</h3>
+                                        <p>Spot Payout: ${spotPayouts.neutral}</p>
+                                        <p>Hedged Payout: ${hedgedPayouts.neutral}</p>
+                                    </div>
+                                </div>
                             </div>
                         )}
                     </>
@@ -267,7 +276,6 @@ const HedgingCalculator = () => {
 
                 {error && <div className="error-message">{error}</div>}
             </div>
-        </div>
     );
 
 };
