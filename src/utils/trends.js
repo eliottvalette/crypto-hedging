@@ -25,8 +25,8 @@ const generateStockPrices = (startPrice, drift, volatility, count) => {
 };
 
 
-const upTrend = generateStockPrices(100, 0.004, 0.4, 100); // Upward trend
-const downTrend = generateStockPrices(100, -0.004, 0.4, 100); // Downward trend
-const sideTrend = generateStockPrices(100, 0, 0.4, 100); // Sideways trend
+const upTrend = generateStockPrices(100, 0.002, 0.02, 100); // Upward trend
+const downTrend = generateStockPrices(100, -0.002, 0.02, 100); // Downward trend
+const sideTrend = generateStockPrices(100, 0, 0.02, 100); // Sideways trend
 
 export default { upTrend, downTrend, sideTrend };

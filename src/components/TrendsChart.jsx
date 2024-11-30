@@ -27,6 +27,7 @@ const TrendsChart = ({ trend, quantity, hedgingRatio, type, symbol, initialMargi
 
     let spotPayout = 0;
     let hedgedPayout = 0;
+    const pricePercentageChange = (close - spotEntryPrice)/ spotEntryPrice * 100;
 
     if (type === 'spot') {
       ({ spotPayout, hedgedPayout } = calculatePayoutShort(
@@ -42,7 +43,7 @@ const TrendsChart = ({ trend, quantity, hedgingRatio, type, symbol, initialMargi
         spotEntryPrice,
         futuresEntryPrice,
         hedgingRatio,
-        parseFloat(close) // Use the adjusted closing price for this data point
+        parseFloat(pricePercentageChange) // Use the adjusted closing price for this data point
       ));
     }
 
@@ -77,10 +78,21 @@ const TrendsChart = ({ trend, quantity, hedgingRatio, type, symbol, initialMargi
       custom: ({ dataPointIndex }) => {
         const { spotPayout, hedgedPayout } = adjustedSeriesData[dataPointIndex];
 
+        // Determine payout colors based on positive or negative values
+        const spotColor = parseFloat(spotPayout) >= 0 ? '#28a745' : '#dc3545'; // Green for positive, red for negative
+        const hedgedColor = parseFloat(hedgedPayout) >= 0 ? '#17a2b8' : '#ffc107'; // Blue for positive, yellow for negative
+
         return `
-          <div>
-            <div>Spot Payout: ${spotPayout}</div>
-            <div>Hedged Payout: ${hedgedPayout}</div>
+          <div class="custom-tooltip">
+            <div style="margin-bottom: 8px; font-weight: bold; text-align: center;">Payouts</div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+              <span>Spot Payout:</span>
+              <span style="color: ${spotColor};">$${spotPayout}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span>Hedged Payout:</span>
+              <span style="color: ${hedgedColor};">$${hedgedPayout}</span>
+            </div>
           </div>
         `;
       },

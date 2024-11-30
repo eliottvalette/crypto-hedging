@@ -239,6 +239,16 @@ h1, h2, h3, h4, h5, h6 {
   color: #e0e0e0;
 }
 
+.custom-tooltip{
+  padding: 12px;
+  background: rgba(207, 207, 207, 0.9);
+  border: 1px solid #717171;
+  border-radius: 8px;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  color: #333;
+}
+
 /* Media Queries for Responsiveness */
 @media (max-width: 768px) {
   .header h1 {
