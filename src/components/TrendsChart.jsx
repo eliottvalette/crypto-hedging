@@ -86,11 +86,11 @@ const TrendsChart = ({ trend, quantity, hedgingRatio, type, symbol, initialMargi
           <div class="custom-tooltip">
             <div style="margin-bottom: 8px; font-weight: bold; text-align: center;">Payouts</div>
             <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
-              <span>Spot Payout:</span>
+              <span>Without Hedge:</span>
               <span style="color: ${spotColor};">$${spotPayout}</span>
             </div>
             <div style="display: flex; justify-content: space-between;">
-              <span>Hedged Payout:</span>
+              <span>With Hedge:</span>
               <span style="color: ${hedgedColor};">$${hedgedPayout}</span>
             </div>
           </div>

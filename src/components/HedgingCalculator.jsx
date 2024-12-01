@@ -12,6 +12,7 @@ const HedgingCalculator = () => {
     const [spotEntryPrice, setSpotEntryPrice] = useState(0);
     const [futuresEntryPrice, setFuturesEntryPrice] = useState(0);
     const [hedgingRatio, setHedgingRatio] = useState(0.03);
+    const [platform, setPlatform] = useState('binance');
 
     const [spotPayouts, setSpotPayouts] = useState({ up: null, down: null, neutral: null });
     const [hedgedPayouts, setHedgedPayouts] = useState({ up: null, down: null, neutral: null });
@@ -150,6 +151,12 @@ const HedgingCalculator = () => {
                             onChange={(e) => setSymbol(e.target.value)}
                         />
                         <input
+                            type="text"
+                            placeholder="Platform"
+                            value={platform}
+                            onChange={(e) => setPlatform(e.target.value)}
+                        />
+                        <input
                             type="number"
                             placeholder="Quantity (Q)"
                             value={quantity}
@@ -191,18 +198,18 @@ const HedgingCalculator = () => {
                                 <div className="results-types-container">
                                   <div className="results-up" onClick={() => setTrend('upTrend')}>
                                     <h3>Up Scenario (+10%)</h3>
-                                    <p>Spot Payout: ${spotPayouts.up}</p>
-                                    <p>Hedged Payout: ${hedgedPayouts.up}</p>
+                                    <p>Without Hedge: ${spotPayouts.up}</p>
+                                    <p>With Hedge: ${hedgedPayouts.up}</p>
                                   </div>
                                   <div className="results-down" onClick={() => setTrend('downTrend')}>
                                       <h3>Down Scenario (-10%)</h3>
-                                      <p>Spot Payout: ${spotPayouts.down}</p>
-                                      <p>Hedged Payout: ${hedgedPayouts.down}</p>
+                                      <p>Without Hedge: ${spotPayouts.down}</p>
+                                      <p>With Hedge: ${hedgedPayouts.down}</p>
                                   </div>
                                   <div className="results-neutral" onClick={() => setTrend('sideTrend')}>
                                       <h3>Neutral Scenario (0%)</h3>
-                                      <p>Spot Payout: ${spotPayouts.neutral}</p>
-                                      <p>Hedged Payout: ${hedgedPayouts.neutral}</p>
+                                      <p>Without Hedge: ${spotPayouts.neutral}</p>
+                                      <p>With Hedge: ${hedgedPayouts.neutral}</p>
                                   </div>
                                 </div>
                                 <TrendsChart trend={trend} quantity={quantity} hedgingRatio={hedgingRatio} type ={'spot'} symbol={symbol} initialMargin={initialMargin}/>
@@ -217,6 +224,12 @@ const HedgingCalculator = () => {
                             placeholder="Symbol"
                             value={symbol}
                             onChange={(e) => setSymbol(e.target.value)}
+                        />
+                        <input
+                            type="text"
+                            placeholder="Platform"
+                            value={platform}
+                            onChange={(e) => setPlatform(e.target.value)}
                         />
                         <input
                             type="number"
@@ -259,18 +272,18 @@ const HedgingCalculator = () => {
                                 <div className="results-types-container">
                                   <div className="results-up" onClick={() => setTrend('upTrend')}>
                                     <h3>Up Scenario (+10%)</h3>
-                                    <p>Spot Payout: ${spotPayouts.up}</p>
-                                    <p>Hedged Payout: ${hedgedPayouts.up}</p>
+                                    <p>Without Hedge: ${spotPayouts.up}</p>
+                                    <p>With Hedge: ${hedgedPayouts.up}</p>
                                   </div>
                                   <div className="results-down" onClick={() => setTrend('downTrend')}>
                                       <h3>Down Scenario (-10%)</h3>
-                                      <p>Spot Payout: ${spotPayouts.down}</p>
-                                      <p>Hedged Payout: ${hedgedPayouts.down}</p>
+                                      <p>Without Hedge: ${spotPayouts.down}</p>
+                                      <p>With Hedge: ${hedgedPayouts.down}</p>
                                   </div>
                                   <div className="results-neutral" onClick={() => setTrend('sideTrend')}>
                                       <h3>Neutral Scenario (0%)</h3>
-                                      <p>Spot Payout: ${spotPayouts.neutral}</p>
-                                      <p>Hedged Payout: ${hedgedPayouts.neutral}</p>
+                                      <p>Without Hedge: ${spotPayouts.neutral}</p>
+                                      <p>With Hedge: ${hedgedPayouts.neutral}</p>
                                   </div>
                                 </div>
                                 <TrendsChart trend={trend} quantity={quantity} hedgingRatio={hedgingRatio} type ={'future'} symbol={symbol}/>
