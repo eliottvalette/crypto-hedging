@@ -8,6 +8,8 @@ export const FEE_RATES = {
     trading: 0.001      // General trading fee: 0.1%
 };
 
+
+
 // Calculate payouts for Futures Hedging
 export function calculatePayoutFuture(quantity, spotEntryPrice, futuresEntryPrice, hedgingRatio, priceChangePercent) {
 
@@ -77,7 +79,7 @@ export function calculatePayoutShort(quantity, spotEntryPrice, spotExitPrice, he
 
 
 export const calculateShortHedgeParameters = (
-    expectedTrend,
+    targetReturn,
     desiredPayout,
     availableMargin,
     riskAversion,
@@ -90,7 +92,7 @@ export const calculateShortHedgeParameters = (
         high: 0.8,
     };
 
-    const hedgingRatio = Math.min(1, desiredPayout / (expectedTrend * 100)); // Example logic
+    const hedgingRatio = Math.min(1, desiredPayout / (targetReturn * 100)); // Example logic
     const adjustedHedgingRatio = hedgingRatio * riskMultiplier[riskAversion];
 
     const quantity = desiredPayout / (adjustedHedgingRatio * spotEntryPrice);

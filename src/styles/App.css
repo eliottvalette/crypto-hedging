@@ -133,6 +133,7 @@ main {
   flex-direction: column;
   align-items: center;
   gap: 0;
+  margin-bottom: 2rem; /* Added margin-bottom */
 }
 
 
@@ -339,7 +340,7 @@ main {
 
 
 /* Dropdown (Risk Aversion Select) */
-.risk-select {
+.risk-select, .currency-select {
   width: 100%;
   padding: 1rem;
   margin-bottom: 1rem;
@@ -353,11 +354,11 @@ main {
   box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
-.risk-select:hover {
+.risk-select:hover, .currency-select:hover {
   background: #3e3e3e;
 }
 
-.risk-select:focus {
+.risk-select:focus, .currency-select:focus {
   outline: none;
   background: #ffab00;
   color: #121212;

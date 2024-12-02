@@ -1,5 +1,35 @@
 import axios from 'axios';
 
+export async function getAvailableSymbols(platform = 'binance') {
+  const urls = {
+    binance: 'https://api.binance.com/api/v3/exchangeInfo',
+  };
+
+  const url = urls[platform.toLowerCase()];
+  if (!url) {
+    console.error(`Unsupported platform: ${platform}`);
+    return [];
+  }
+
+  try {
+    const response = await axios.get(url);
+    let symbols;
+    switch (platform.toLowerCase()) {
+      case 'binance':
+        symbols = response.data.symbols.map((symbol) => symbol.symbol);
+        break;
+      default:
+        console.error(`Symbol extraction not defined for platform: ${platform}`);
+        return [];
+    }
+    console.log(`Available symbols (${platform}):`, symbols);
+    return symbols;
+  } catch (error) {
+    console.error(`Error retrieving available symbols from ${platform}:`, error.message);
+    return [];
+  }
+}
+
 export async function getSpotPrice(symbol, platform = 'binance') {
   const urls = {
     binance: `https://api.binance.com/api/v3/ticker/price?symbol=${symbol}`,
