@@ -199,21 +199,21 @@ const HedgingScenarios = () => {
                                 <div className="results-types-container">
                                   <div className="results-up" onClick={() => setTrend('upTrend')}>
                                     <h3>Up Scenario (+10%)</h3>
-                                    <p>Without Hedge: ${spotPayouts.up}</p>
+                                    <p className="results-without" >Without Hedge: ${spotPayouts.up}</p>
                                     <p>With Hedge: ${hedgedPayouts.up}</p>
                                   </div>
                                   <div className="results-down" onClick={() => setTrend('downTrend')}>
                                       <h3>Down Scenario (-10%)</h3>
-                                      <p>Without Hedge: ${spotPayouts.down}</p>
+                                      <p className="results-without" >Without Hedge: ${spotPayouts.down}</p>
                                       <p>With Hedge: ${hedgedPayouts.down}</p>
                                   </div>
                                   <div className="results-neutral" onClick={() => setTrend('sideTrend')}>
                                       <h3>Neutral Scenario (0%)</h3>
-                                      <p>Without Hedge: ${spotPayouts.neutral}</p>
+                                      <p className="results-without" >Without Hedge: ${spotPayouts.neutral}</p>
                                       <p>With Hedge: ${hedgedPayouts.neutral}</p>
                                   </div>
                                 </div>
-                                <TrendsChart trend={trend} quantity={quantity} hedgingRatio={hedgingRatio} type ={'spot'} symbol={symbol} marginRate={marginRate}/>
+                                <TrendsChart className="trends-chart" trend={trend} quantity={quantity} hedgingRatio={hedgingRatio} type ={'spot'} symbol={symbol} marginRate={marginRate}/>
                             </div>
                         )}
                     </>
