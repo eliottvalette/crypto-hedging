@@ -1,90 +1,120 @@
-import { useState } from 'react';
-import { calculateParametersFromPayout } from '../utils/hedging';
+import { useState, useEffect } from 'react';
+import { calculateShortHedgeParameters } from '../utils/hedging';
 import TrendsChart from './TrendsChart';
+import { getSpotPrice} from '../utils/data';
 
-const ResultBasedCalculator = () => {
-    const [desiredPayouts, setDesiredPayouts] = useState({ up: 0, down: 0, neutral: 0 });
-    const [trend, setTrend] = useState('upTrend');
+const ResultBasedShortHedging = () => {
+    const [expectedTrend, setExpectedTrend] = useState(10);
+    const [desiredPayout, setDesiredPayout] = useState(1000);
+    const [availableMargin, setAvailableMargin] = useState(2000);
+    const [riskAversion, setRiskAversion] = useState('medium');
     const [calculatedParams, setCalculatedParams] = useState(null);
+    const [spotEntryPrice, setSpotEntryPrice] = useState(0);
+    const [symbol, setSymbol] = useState('BTCUSDT');
+    
     const [error, setError] = useState('');
 
-    const handleCalculateParameters = () => {
-        const { up, down, neutral } = desiredPayouts;
+    useEffect(() => {
+        async function fetchPrices() {
+            const spotPrice = await getSpotPrice(symbol);
+            setSpotEntryPrice(spotPrice);
+        }
+        fetchPrices();
+    }, [symbol]);
 
-        if (isNaN(up) || isNaN(down) || isNaN(neutral)) {
-            setError('Please enter valid numerical values for payouts.');
+    const handleCalculateHedge = () => {
+        if (isNaN(expectedTrend) || isNaN(desiredPayout) || isNaN(availableMargin) || isNaN(spotEntryPrice)) {
+            setError('Please enter valid numerical values.');
             return;
         }
 
         setError('');
 
         try {
-            const params = calculateParametersFromPayout(up, down, neutral, trend);
+            const params = calculateShortHedgeParameters(
+                expectedTrend,
+                desiredPayout,
+                availableMargin,
+                riskAversion,
+                spotEntryPrice
+            );
+            console.log('Calculated Parameters:', params);
             setCalculatedParams(params);
         } catch (err) {
-            setError('Calculation failed. Please check your inputs and try again.');
+            console.error('Hedge Calculation Error:', err);
+            setError(`Calculation failed : ${err.message}`);
         }
     };
 
     return (
         <div className="calculator-container">
-            <h1>Result-Based Hedging Calculator</h1>
+            <h1>Result-Based Short Hedging</h1>
 
-            <label>Desired Payout - Up Scenario (+10%)</label>
+            <label>Currency</label>
             <input
-                type="number"
-                placeholder="Desired Payout Up ($)"
-                value={desiredPayouts.up}
-                onChange={(e) => setDesiredPayouts({ ...desiredPayouts, up: parseFloat(e.target.value) })}
+                type="text"
+                placeholder="BTCUSDT"
+                value={symbol}
+                onChange={(e) => setSymbol(e.target.value)}
             />
 
-            <label>Desired Payout - Down Scenario (-10%)</label>
+            <label>Expected Trend (in %)</label>
             <input
                 type="number"
-                placeholder="Desired Payout Down ($)"
-                value={desiredPayouts.down}
-                onChange={(e) => setDesiredPayouts({ ...desiredPayouts, down: parseFloat(e.target.value) })}
+                placeholder="e.g., +10 or -5"
+                value={expectedTrend}
+                onChange={(e) => setExpectedTrend(parseFloat(e.target.value))}
             />
 
-            <label>Desired Payout - Neutral Scenario (0%)</label>
+            <label>Desired Payout ($)</label>
             <input
                 type="number"
-                placeholder="Desired Payout Neutral ($)"
-                value={desiredPayouts.neutral}
-                onChange={(e) => setDesiredPayouts({ ...desiredPayouts, neutral: parseFloat(e.target.value) })}
+                placeholder="Desired payout"
+                value={desiredPayout}
+                onChange={(e) => setDesiredPayout(parseFloat(e.target.value))}
             />
 
-            <label>Select Trend</label>
-            <select value={trend} onChange={(e) => setTrend(e.target.value)}>
-                <option value="upTrend">Up Trend</option>
-                <option value="downTrend">Down Trend</option>
-                <option value="sideTrend">Neutral Trend</option>
+            <label>Available Margin ($)</label>
+            <input
+                type="number"
+                placeholder="Available margin"
+                value={availableMargin}
+                onChange={(e) => setAvailableMargin(parseFloat(e.target.value))}
+            />
+
+            <label>Risk Aversion</label>
+            <select value={riskAversion || 'medium'} onChange={(e) => setRiskAversion(e.target.value)} className='risk-select'>
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
             </select>
 
-            <button onClick={handleCalculateParameters}>Calculate Parameters</button>
+
+            <button onClick={handleCalculateHedge} className='calculate-button'>Calculate Hedge</button>
 
             {calculatedParams && (
                 <div className="results-container">
-                    <h2>Calculated Parameters</h2>
+                    <h2>Calculated Hedge Parameters</h2>
                     <p>Quantity (Q): {calculatedParams.quantity}</p>
                     <p>Hedging Ratio (h): {calculatedParams.hedgingRatio}</p>
+                    <p>Leverage: {calculatedParams.leverage}</p>
                     <p>Spot Entry Price: ${calculatedParams.spotEntryPrice}</p>
-                    <p>Futures Entry Price: ${calculatedParams.futuresEntryPrice}</p>
-                    <p>Margin Rate: {calculatedParams.marginRate}</p>
+                    <p>Margin Required: ${calculatedParams.marginRequired}</p>
                     <TrendsChart
-                        trend={trend}
-                        quantity={calculatedParams.quantity}
-                        hedgingRatio={calculatedParams.hedgingRatio}
-                        type="resultBased"
+                        trend={expectedTrend > 0 ? 'upTrend' : expectedTrend < 0 ? 'downTrend' : 'neutralTrend'}
+                        quantity={Number(calculatedParams.quantity)}
+                        hedgingRatio={Number(calculatedParams.hedgingRatio)}
+                        type="resultBasedShort"
                         symbol="BTCUSDT"
-                        marginRate={calculatedParams.marginRate}
+                        marginRate={Number(calculatedParams.marginRate)}
                     />
+
                 </div>
             )}
 
-            {error && <div className="error-message">{error}</div>}
+            {error && <div className="error-message">⚠️ {error}</div>}
         </div>
     );
 };
 
-export default ResultBasedCalculator;
+export default ResultBasedShortHedging;

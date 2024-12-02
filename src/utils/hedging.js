@@ -76,19 +76,37 @@ export function calculatePayoutShort(quantity, spotEntryPrice, spotExitPrice, he
 }
 
 
-export const calculateParametersFromPayout = (up, down, neutral, trend) => {
-    // Example logic to calculate parameters based on payouts
-    const quantity = Math.abs((up + down + neutral) / 3); // Arbitrary calculation logic
-    const hedgingRatio = Math.max(0, Math.min(1, (up - down) / 100)); // Ensure 0 <= h <= 1
-    const spotEntryPrice = 1000; // Example fixed spot entry price
-    const futuresEntryPrice = spotEntryPrice * (1 + hedgingRatio * 0.1); // Example calculation
-    const marginRate = 0.1; // Example fixed margin rate
+export const calculateShortHedgeParameters = (
+    expectedTrend,
+    desiredPayout,
+    availableMargin,
+    riskAversion,
+    spotEntryPrice
+) => {
+    // Define risk-based hedging ratio multipliers
+    const riskMultiplier = {
+        low: 0.2,
+        medium: 0.5,
+        high: 0.8,
+    };
+
+    const hedgingRatio = Math.min(1, desiredPayout / (expectedTrend * 100)); // Example logic
+    const adjustedHedgingRatio = hedgingRatio * riskMultiplier[riskAversion];
+
+    const quantity = desiredPayout / (adjustedHedgingRatio * spotEntryPrice);
+    const leverage = availableMargin / (quantity * spotEntryPrice);
+    const marginRequired = quantity * spotEntryPrice * adjustedHedgingRatio;
+
+    if (marginRequired > availableMargin) {
+        throw new Error('Not enough margin to execute this hedge.');
+    }
 
     return {
         quantity: quantity.toFixed(2),
-        hedgingRatio: hedgingRatio.toFixed(2),
+        hedgingRatio: adjustedHedgingRatio.toFixed(2),
+        leverage: leverage.toFixed(2),
         spotEntryPrice: spotEntryPrice.toFixed(2),
-        futuresEntryPrice: futuresEntryPrice.toFixed(2),
-        marginRate: marginRate.toFixed(2),
+        marginRequired: marginRequired.toFixed(2),
     };
 };
+

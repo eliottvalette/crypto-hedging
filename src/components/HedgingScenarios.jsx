@@ -12,7 +12,7 @@ const HedgingScenarios = () => {
     const [spotEntryPrice, setSpotEntryPrice] = useState(0);
     const [futuresEntryPrice, setFuturesEntryPrice] = useState(0);
     const [hedgingRatio, setHedgingRatio] = useState(0.03);
-    const [platform, setPlatform] = useState('binance');
+    const [platform, setPlatform] = useState('Binance');
 
     const [spotPayouts, setSpotPayouts] = useState({ up: null, down: null, neutral: null });
     const [hedgedPayouts, setHedgedPayouts] = useState({ up: null, down: null, neutral: null });
@@ -190,7 +190,7 @@ const HedgingScenarios = () => {
                             value={hedgingRatio}
                             onChange={(e) => setHedgingRatio(e.target.value)}
                         />
-                        <button onClick={handleCalculateShort}>Calculate</button>
+                        <button onClick={handleCalculateShort} className='calculate-button'>Calculate</button>
 
                         {spotPayouts.up !== null && (                            
                             <div className="results-container">
@@ -265,7 +265,7 @@ const HedgingScenarios = () => {
                             value={hedgingRatio}
                             onChange={(e) => setHedgingRatio(e.target.value)}
                         />
-                        <button onClick={handleCalculateFuture}>Calculate</button>
+                        <button onClick={handleCalculateFuture} className='calculate-button' >Calculate</button>
 
                         {spotPayouts.up !== null && (
                             <div className="results-container">
