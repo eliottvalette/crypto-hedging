@@ -54,14 +54,14 @@ function Dashboard() {
   }, []);
 
   return (
-    <>
+    <div className="dashboard">
       <div className="market-info">
               <p>Current BTC Price: {marketData && marketData.lastPrice ? `$${parseFloat(marketData.lastPrice).toLocaleString()}` : 'N/A'}</p>
       </div>
       <div className="chart-container" ref={container}>
         <div className="chart-container__widget"></div>
       </div>
-    </>
+    </div>
   );
 }
 

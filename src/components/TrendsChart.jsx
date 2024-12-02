@@ -5,7 +5,7 @@ import trends from '../utils/trends';
 import { calculatePayoutFuture, calculatePayoutShort } from '../utils/hedging';
 import { getSpotPrice, getFuturesPrice } from '../utils/data';
 
-const TrendsChart = ({ trend, quantity, hedgingRatio, type, symbol, initialMargin }) => {
+const TrendsChart = ({ trend, quantity, hedgingRatio, type, symbol, marginRate }) => {
   const [spotEntryPrice, setSpotEntryPrice] = useState(0);
   const [futuresEntryPrice, setFuturesEntryPrice] = useState(0);
 
@@ -35,7 +35,7 @@ const TrendsChart = ({ trend, quantity, hedgingRatio, type, symbol, initialMargi
         spotEntryPrice,
         parseFloat(close), // Use the adjusted closing price for this data point
         hedgingRatio,
-        initialMargin
+        marginRate
       ));
     } else {
       ({ spotPayout, hedgedPayout } = calculatePayoutFuture(
@@ -112,7 +112,7 @@ TrendsChart.propTypes = {
   hedgingRatio: PropTypes.number.isRequired,
   type: PropTypes.string.isRequired,
   symbol: PropTypes.string.isRequired,
-  initialMargin: PropTypes.number,
+  marginRate: PropTypes.number,
 };
 
 export default TrendsChart;

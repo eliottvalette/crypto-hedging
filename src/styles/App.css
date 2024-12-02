@@ -1,12 +1,8 @@
 /* General Reset and Base Styling */
 body, html {
-  margin: 0;
-  height: 100%;
   font-family: 'Roboto', Arial, sans-serif;
   background-color: #121212;
   color: #e0e0e0;
-  display: flex;
-  flex-direction: column;
 }
 
 a {
@@ -19,38 +15,28 @@ h1, h2, h3, h4, h5, h6 {
   font-weight: 500;
 }
 
-/* Header */
-.header {
+.App{
+  display: flex;
+  flex-direction: row;
+  min-height: 100vh;
+}
+
+/* aside */
+aside {
+  position: fixed; /* Ensures the aside stays fixed on the left */
+  top: 0;
+  left: 0;
+  width: 14rem; /* Set the desired width */
+  height: 100%; /* Takes up the full height of the viewport */
   background-color: #0d1117; /* Darker tone */
   color: #ffffff;
   padding: 1rem 2rem;
   display: flex;
+  flex-direction: column;
   justify-content: space-between;
   align-items: center;
   border-bottom: 2px solid #21262d; /* Subtle border */
-  height: 10vh;
-}
-
-.header h1 {
-  font-size: 2rem;
-  font-weight: bold;
-  color: #ffab00; /* Accent color */
-}
-
-.header nav ul {
-  display: flex;
-  list-style: none;
-  gap: 2rem;
-}
-
-.header nav ul li a {
-  font-size: 1rem;
-  color: #e0e0e0;
-  transition: color 0.3s ease;
-}
-
-.header nav ul li a:hover {
-  color: #00e676; /* Bright hover effect */
+  height: 100vh;
 }
 
 /* Footer */
@@ -58,33 +44,116 @@ h1, h2, h3, h4, h5, h6 {
   background-color: #0d1117;
   color: #e0e0e0;
   text-align: center;
-  padding: 1.5rem 1rem;
+  padding: 1rem 1rem;
   font-size: 0.9rem;
   border-top: 2px solid #21262d;
-  height: 10vh;
+}
+
+.aside-top nav {
+  margin-top: 3rem
+}
+
+.aside-top h1 {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #ffab00; /* Accent color */
+}
+
+.nav-ul {
+  margin: 0px;
+  padding: 0px;
+}
+
+.aside-top nav ul {
+  display: flex;
+  flex-direction: column;
+  list-style: none;
+  gap: 2rem;
+}
+
+.aside-top nav ul li a {
+  display: flex;
+  padding: 10px 15px;
+  font-size: 1rem;
+  color: #e0e0e0;
+  transition: color 0.3s ease;
+}
+
+.aside-top nav ul li a:hover {
+  color: #ffab00; /* Bright hover effect */
+}
+
+.active-link {
+  display: flex;
+  padding: 10px 15px;
+  background-color: #4b3e2d; /* Dark background */
+  color: #f39c12; /* Highlighted text color (golden) */
+  border-radius: 8px; /* Rounded corners */
+  font-weight: bold;
+  text-decoration: none;
+  transition: all 0.3s ease;
+ 
 }
 
 /* Main Content */
-.main {
-  min-height: 80vh;
+main {
+  height: 100vh;
+  margin-left: 18rem;
   width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header */ 
+.header {
+  background-color: #0d1117; /* Darker tone */
+  color: #ffffff;
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: right;
+  align-items: center;
+  border-bottom: 2px solid #21262d; /* Subtle border */
+  height: 10vh;
+}
+
+.header-button {
+  position: relative;
+  background: linear-gradient(180deg, #121212, #1e1e1e); /* Button background */
+  color: #ffffff;
+  font-family: 'Roboto', Arial, sans-serif;
+  font-size: 1rem;
+  font-weight: bold;
+  padding: 0.75rem 1.5rem;
+  border: none; /* Remove the default border */
+  border-radius: 30px; /* Round corners */
+  cursor: pointer;
+  transition: background 0.3s ease, color 0.3s ease, transform 0.2s ease;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.3); /* Shadow effect */
+  z-index: 1; /* Ensure the button stays above the pseudo-element */
+}
+
+.header-button {
+  position: relative;
+  background: linear-gradient(180deg, #121212, #1e1e1e); /* Button background */
+  color: #ffffff;
+  font-family: 'Roboto', Arial, sans-serif;
+  font-size: 1rem;
+  font-weight: bold;
+  padding: 0.75rem 1.5rem;
+  border: 2px solid #ff6f00;
+  border-radius: 30px; /* Round corners */
+  cursor: pointer;
+  transition: background 0.3s ease, color 0.3s ease, transform 0.2s ease;
+  z-index: 1; /* Ensure the button stays above the pseudo-element */
 }
 
 /* Dashboard */
 .dashboard {
-  background: #1e2228; /* Subtle dark background */
-  border-radius: 12px;
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
   padding: 2rem;
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.dashboard:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
 }
 
 /* Market Info */
@@ -110,11 +179,6 @@ h1, h2, h3, h4, h5, h6 {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
-.chart-container__widget {
-  width: 100%;
-  height: 100%;
-}
-
 /* Calculator */
 .calculator-container {
   margin: auto;
@@ -129,6 +193,7 @@ h1, h2, h3, h4, h5, h6 {
   display: flex;
   flex-direction: column;
   justify-content: center; /* Center content vertically */
+  box-sizing: border-box;
 }
 
 .calculator-container h1 {
@@ -139,8 +204,8 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .calculator-container input[type="number"],
+.calculator-container input[type="text"],
 .calculator-container input[type="range"] {
-  width: 100%;
   padding: 1rem;
   margin-bottom: 1rem;
   border: none;
@@ -172,7 +237,7 @@ h1, h2, h3, h4, h5, h6 {
 
 .buttons-container button.active,
 .buttons-container button:hover {
-  background: #00e676; /* Bright green for active */
+  background: #ffab00; /* Bright green for active */
   color: #121212;
 }
 
@@ -251,7 +316,7 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Media Queries for Responsiveness */
 @media (max-width: 768px) {
-  .header h1 {
+  .aside h1 {
     font-size: 1.5rem;
   }
 

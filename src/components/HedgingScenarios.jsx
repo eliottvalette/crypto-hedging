@@ -5,7 +5,7 @@ import { calculatePayoutFuture, calculatePayoutShort } from '../utils/hedging';
 import { getSpotPrice, getFuturesPrice} from '../utils/data';
 import TrendsChart from './TrendsChart';
 
-const HedgingCalculator = () => {
+const HedgingScenarios = () => {
     const [hedgeType, setHedgeType] = useState('spot');
     const [symbol, setSymbol] = useState('BTCUSDT');
     const [quantity, setQuantity] = useState(1);
@@ -18,19 +18,19 @@ const HedgingCalculator = () => {
     const [hedgedPayouts, setHedgedPayouts] = useState({ up: null, down: null, neutral: null });
     const [optimalLeverage, setOptimalLeverage] = useState(null);
     const [error, setError] = useState('');
-    const [initialMargin, setInitialMargin] = useState(1000); // Added initialMargin state
+    const [marginRate, setMarginRate] = useState(0.1); // Added marginRate state
 
     const [trend, setTrend] = useState('upTrend');
 
     useEffect(() => {
         async function fetchPrices() {
-            const spotPrice = await getSpotPrice(symbol);
-            const futuresPrice = await getFuturesPrice(symbol);
+            const spotPrice = await getSpotPrice(symbol, platform);
+            const futuresPrice = await getFuturesPrice(symbol, platform);
             setSpotEntryPrice(spotPrice);
             setFuturesEntryPrice(futuresPrice);
         }
         fetchPrices();
-    }, [symbol]);
+    }, [symbol, platform]);
 
     const handleCalculateFuture = () => {
         const Q = parseFloat(quantity);
@@ -77,7 +77,7 @@ const HedgingCalculator = () => {
     const handleCalculateShort = () => {
         const Q = parseFloat(quantity);
         const P_spot_achat = parseFloat(spotEntryPrice);
-        const margin = parseFloat(initialMargin);
+        const margin = parseFloat(marginRate);
         const h = parseFloat(hedgingRatio);
 
         if (isNaN(Q) || isNaN(P_spot_achat) || isNaN(margin) || isNaN(h)) {
@@ -172,13 +172,14 @@ const HedgingCalculator = () => {
                             min="0"
                             step="0.01"
                         />
+                        <label>Margin Rate : {marginRate}</label>
                         <input
-                            type="number"
-                            placeholder="Initial Margin ($)"
-                            value={initialMargin}
-                            onChange={(e) => setInitialMargin(e.target.value)}
+                            type="range"
                             min="0"
+                            max="1"
                             step="0.01"
+                            value={marginRate}
+                            onChange={(e) => setMarginRate(e.target.value)}
                         />
                         <label>Hedging Ratio (h): {hedgingRatio}</label>
                         <input
@@ -212,7 +213,7 @@ const HedgingCalculator = () => {
                                       <p>With Hedge: ${hedgedPayouts.neutral}</p>
                                   </div>
                                 </div>
-                                <TrendsChart trend={trend} quantity={quantity} hedgingRatio={hedgingRatio} type ={'spot'} symbol={symbol} initialMargin={initialMargin}/>
+                                <TrendsChart trend={trend} quantity={quantity} hedgingRatio={hedgingRatio} type ={'spot'} symbol={symbol} marginRate={marginRate}/>
                             </div>
                         )}
                     </>
@@ -298,4 +299,4 @@ const HedgingCalculator = () => {
 
 };
 
-export default HedgingCalculator;
+export default HedgingScenarios;
