@@ -1,7 +1,19 @@
+import { useContext } from 'react';
+import { NavLink } from 'react-router-dom';
+import { UserContext } from '../components/UserContext';
+
 function Header() {
+  const { user } = useContext(UserContext);
+
   return (
     <div className="header">
-      <button className="header-button">Open Account</button>
+      {user ? (
+        <p>Welcome, {user.email}</p>
+      ) : (
+        <NavLink to="/auth" className="header-button">
+          Open Account
+        </NavLink>
+      )}
     </div>
   );
 }

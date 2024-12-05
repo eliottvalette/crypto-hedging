@@ -116,8 +116,8 @@ const ResultBasedShortHedging = () => {
                         quantity={Number(calculatedParams.quantity)}
                         hedgingRatio={Number(calculatedParams.hedgingRatio)}
                         type="resultBasedShort"
-                        symbol="BTCUSDT"
                         marginRate={Number(calculatedParams.marginRate)}
+                        spotEntryPrice={Number(spotEntryPrice)}
                     />
                 </div>
             )}

@@ -8,12 +8,8 @@ export const FEE_RATES = {
     trading: 0.001      // General trading fee: 0.1%
 };
 
-
-
 // Calculate payouts for Futures Hedging
 export function calculatePayoutFuture(quantity, spotEntryPrice, futuresEntryPrice, hedgingRatio, priceChangePercent) {
-
-    ////////////////////////////////////////////
     const Q = parseFloat(quantity) || 1;
     const P_spot_achat = parseFloat(spotEntryPrice) || 1;
     const P_futures_entree = parseFloat(futuresEntryPrice) || 1;
@@ -21,9 +17,8 @@ export function calculatePayoutFuture(quantity, spotEntryPrice, futuresEntryPric
 
     if (!Q || !P_spot_achat || !P_futures_entree || h < 0 || h > 1) {
         console.error("Invalid inputs for futures calculation:", { Q, P_spot_achat, P_futures_entree, h });
-        return { spotPayout: 0, hedgedPayout: 0 };
+        return { spotPayout: 0, hedgedPayout: 0, totalInvested: 0 };
     }
-    ////////////////////////////////////////////
 
     // Calculate exit spot price based on price change
     const P_spot_vente = P_spot_achat * (1 + priceChangePercent / 100);
@@ -41,7 +36,10 @@ export function calculatePayoutFuture(quantity, spotEntryPrice, futuresEntryPric
     const Frais_totaux = Frais_spot + Frais_futures + Paiement_financement;
     const hedgedPayout = P_L_spot + P_L_futures - Frais_totaux;
 
-    return { spotPayout, hedgedPayout };
+    // Total invested
+    const totalInvested = Q * P_spot_achat;
+
+    return { spotPayout, hedgedPayout, totalInvested };
 }
 
 // Calculate payouts for Short Position Hedging
@@ -54,7 +52,7 @@ export function calculatePayoutShort(quantity, spotEntryPrice, spotExitPrice, he
 
     if (!Q || !P_spot_achat || !P_spot_vente || h < 0 || h > 1 || margin_rate <= 0) {
         console.error("Invalid inputs for short hedging calculation:", { Q, P_spot_achat, P_spot_vente, h, margin_rate });
-        return { spotPayout: 0, hedgedPayout: 0, optimalLeverage: 0 };
+        return { spotPayout: 0, hedgedPayout: 0, optimalLeverage: 0, totalInvested: 0 };
     }
 
     // Calculate margin based on margin rate
@@ -74,9 +72,11 @@ export function calculatePayoutShort(quantity, spotEntryPrice, spotExitPrice, he
     // Hedged Payout
     const hedgedPayout = P_L_long + P_L_short - Frais_totaux;
 
-    return { spotPayout: P_L_long, hedgedPayout, optimalLeverage };
-}
+    // Total invested
+    const totalInvested = Q * P_spot_achat;
 
+    return { spotPayout: P_L_long, hedgedPayout, optimalLeverage, totalInvested };
+}
 
 export const calculateShortHedgeParameters = (
     targetReturn,
@@ -111,4 +111,3 @@ export const calculateShortHedgeParameters = (
         marginRequired: marginRequired.toFixed(2),
     };
 };
-

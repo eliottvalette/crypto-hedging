@@ -1,38 +1,26 @@
-import { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import Chart from 'react-apexcharts';
 import trends from '../utils/trends';
 import { calculatePayoutFuture, calculatePayoutShort } from '../utils/hedging';
-import { getSpotPrice, getFuturesPrice } from '../utils/data';
 
-const TrendsChart = ({ trend, quantity, hedgingRatio, type, symbol, marginRate }) => {
-  const [spotEntryPrice, setSpotEntryPrice] = useState(0);
-  const [futuresEntryPrice, setFuturesEntryPrice] = useState(0);
-
-  useEffect(() => {
-    async function fetchPrices() {
-      const spotPrice = await getSpotPrice(symbol);
-      const futuresPrice = await getFuturesPrice(symbol);
-      setSpotEntryPrice(spotPrice);
-      setFuturesEntryPrice(futuresPrice);
-    }
-    fetchPrices();
-  }, [symbol]);
+const TrendsChart = ({ trend, quantity, hedgingRatio, type, marginRate, spotEntryPrice, futuresEntryPrice }) => {
+  const spot_entry_price = parseFloat(spotEntryPrice)|| 0;
+  const futures_entry_price = parseFloat(futuresEntryPrice)|| 0;
 
   // Adjust series data and calculate payouts
   const adjustedSeriesData = trends[trend].map((dataPoint) => {
     const [open, high, low, close] = dataPoint.y.map((value) =>
-      (value * spotEntryPrice / 100).toFixed(2)
+      (value * spot_entry_price / 100).toFixed(2)
     );
 
     let spotPayout = 0;
     let hedgedPayout = 0;
-    const pricePercentageChange = (close - spotEntryPrice)/ spotEntryPrice * 100;
+    const pricePercentageChange = (close - spot_entry_price)/ spot_entry_price * 100;
 
     if (type === 'spot') {
       ({ spotPayout, hedgedPayout } = calculatePayoutShort(
         quantity,
-        spotEntryPrice,
+        spot_entry_price,
         parseFloat(close), // Use the adjusted closing price for this data point
         hedgingRatio,
         marginRate
@@ -40,8 +28,8 @@ const TrendsChart = ({ trend, quantity, hedgingRatio, type, symbol, marginRate }
     } else {
       ({ spotPayout, hedgedPayout } = calculatePayoutFuture(
         quantity,
-        spotEntryPrice,
-        futuresEntryPrice,
+        spot_entry_price,
+        futures_entry_price,
         hedgingRatio,
         parseFloat(pricePercentageChange) // Use the adjusted closing price for this data point
       ));
@@ -113,6 +101,8 @@ TrendsChart.propTypes = {
   type: PropTypes.string.isRequired,
   symbol: PropTypes.string.isRequired,
   marginRate: PropTypes.number,
+  spotEntryPrice: PropTypes.number.isRequired,
+  futuresEntryPrice: PropTypes.number,
 };
 
 export default TrendsChart;
