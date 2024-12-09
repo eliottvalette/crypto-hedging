@@ -36,13 +36,17 @@ function Dashboard() {
           "symbol": "BITSTAMP:BTCUSD",
           "interval": "D",
           "timezone": "Etc/UTC",
-          "theme": "light",
+          "theme": "dark",
           "style": "1",
           "locale": "en",
           "allow_symbol_change": true,
           "calendar": false,
+          "hide_side_toolbar": true,
+          "hide_top_toolbar": true,
+          "toolbar_bg": "#004A37",
           "support_host": "https://www.tradingview.com"
         }`;
+
       container.current.appendChild(script);
     }
   
