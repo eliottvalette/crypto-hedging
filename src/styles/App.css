@@ -130,12 +130,12 @@ main {
   flex-direction: column;
   align-items: center;
   gap: 0;
-  margin-bottom: 2rem; /* Added margin-bottom */
-  overflow-y: auto; /* Enable vertical scrolling */
-  padding-bottom: 2rem; /* Ensure padding at the bottom for scrolling */
+  overflow-y:scroll
 }
 
 /* Header */
+.header {
+  background-color: transparent;
   color: #ffffff;
   padding: 1rem 2rem;
   display: flex;
