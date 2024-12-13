@@ -64,7 +64,7 @@ function Auth() {
   return (
     <div className="auth-container">
       <div className="auth-box">
-        <div className="auth-logo">🔺</div>
+        <img src="src/assets/shield.png" alt="lock" className="auth-img" />
         <h2 className="auth-title">Connexion</h2>
         {error && <p className="auth-error">{error}</p>}
         <input

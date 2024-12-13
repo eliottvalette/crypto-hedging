@@ -374,60 +374,98 @@ main {
   color: var(--color-dark-teal);
 }
 
-/* Auth */ 
-.auth {
+/* Auth */
+.auth-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background: transparent;
+}
+
+.auth-box {
   background: var(--color-dark-teal-transparent);
   padding: 2rem;
-  border-radius: 12px;
+  border-radius: 10px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  text-align: center;
   width: 100%;
   max-width: 400px;
-  margin: 2rem auto;
-  text-align: center;
+  box-sizing: border-box; /* Added to ensure padding is included in the width */
 }
 
-.auth h2 {
-  color: var(--color-teal);
+.auth-img {
+  width: 5rem;
+  margin: 0 auto;
+  margin-bottom: 1.5rem;
+}
+
+.auth-title {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  color: var(--color-white);
+}
+
+.auth-error {
+  color: var(--color-red);
   margin-bottom: 1rem;
 }
 
-.auth input[type="email"],
-.auth input[type="password"] {
-  width: 92%;
+.auth-input {
+  width: calc(100% - 2rem); /* Adjusted to fit within the container */
   padding: 1rem;
   margin-bottom: 1rem;
   border: none;
   border-radius: 8px;
   background: var(--color-dark-green);
   color: var(--color-white);
-}
-
-.auth button {
-  width: 100%;
-  padding: 1rem;
-  margin-bottom: 1rem;
-  border: none;
-  border-radius: 8px;
-  background: var(--color-dark-green);
-  color: var(--color-white);
-  font-size: 1rem;
-  cursor: pointer;
   transition: background 0.3s ease, color 0.3s ease;
 }
 
-.auth button:hover {
+.auth-input:focus {
+  outline: none;
+  background: var(--color-light-green);
+}
+
+.auth-button {
+  width: 100%;
+  padding: 1rem;
+  border: none;
+  border-radius: 8px;
   background: var(--color-light-green);
   color: var(--color-dark-teal);
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
-.auth p {
-  color: var(--color-light-gray);
+.auth-button:hover {
+  background: var(--color-teal);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+}
+
+.auth-button:active {
+  background: var(--color-light-green);
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.auth-footer {
   margin-top: 1rem;
+  color: var(--color-light-gray);
 }
 
-.auth .error {
-  color: var(--color-red);
-  margin-bottom: 1rem;
+.auth-link {
+  color: var(--color-teal);
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.auth-link:hover {
+  color: var(--color-light-green);
 }
 
 /* Media Queries for Responsiveness */
