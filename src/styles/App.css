@@ -453,6 +453,10 @@ main {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
+.google-button {
+  margin-top: 1rem;
+}
+
 .auth-footer {
   margin-top: 1rem;
   color: var(--color-light-gray);

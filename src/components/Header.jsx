@@ -1,14 +1,28 @@
 import { useContext } from 'react';
 import { NavLink } from 'react-router-dom';
 import { UserContext } from '../components/UserContext';
+import { logout } from '../utils/auth'; // Import logout function
 
 function Header() {
-  const { user } = useContext(UserContext);
+  const { user, setUser } = useContext(UserContext);
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      setUser(null);
+    } catch (error) {
+      console.error('Error logging out:', error);
+    }
+  };
 
   return (
     <div className="header">
       {user ? (
-        <p>Welcome, {user.email}</p>
+        <>
+          <button onClick={handleLogout} className="header-button">
+            Logout
+          </button>
+        </>
       ) : (
         <NavLink to="/auth" className="header-button">
           Open Account

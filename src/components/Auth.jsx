@@ -1,5 +1,5 @@
 import { useState, useContext } from 'react';
-import { register, login, logout } from '../utils/auth';
+import { register, login, logout, googleSignIn } from '../utils/auth';
 import { UserContext } from '../components/UserContext';
 
 function Auth() {
@@ -67,6 +67,16 @@ function Auth() {
     }
   };
 
+  const handleGoogleSignIn = async () => {
+    try {
+      const googleUser = await googleSignIn();
+      setUser(googleUser);
+    } catch (error) {
+      console.error('Error signing in with Google:', error);
+      setError('Error signing in with Google');
+    }
+  };
+
   const toggleAuth = () => {
     setIsRegistering(!isRegistering);
   }
@@ -95,6 +105,9 @@ function Auth() {
             />
             <button onClick={handleLogin} className="auth-button">
               Login
+            </button>
+            <button onClick={handleGoogleSignIn} className="auth-button google-button">
+              Sign in with Google
             </button>
             <div className="auth-footer">
               <p>
@@ -133,6 +146,9 @@ function Auth() {
             />
             <button onClick={handleRegister} className="auth-button">
               Sign Up
+            </button>
+            <button onClick={handleGoogleSignIn} className="auth-button google-button">
+              Sign in with Google
             </button>
             <div className="auth-footer">
               <p>
