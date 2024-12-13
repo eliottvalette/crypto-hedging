@@ -1,4 +1,3 @@
-// src/components/Auth.jsx
 import { useState, useContext } from 'react';
 import { register, login, logout } from '../utils/auth';
 import { UserContext } from '../components/UserContext';
@@ -7,7 +6,7 @@ function Auth() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const { user, setUser } = useContext(UserContext);
+  const {user, setUser } = useContext(UserContext);
 
   const validateEmail = (email) => {
     const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -63,25 +62,37 @@ function Auth() {
   };
 
   return (
-    <div className="auth">
-      <h2>Authentication</h2>
-      {error && <p className="error">{error}</p>}
-      <input
-        type="email"
-        placeholder="Email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-      />
-      <input
-        type="password"
-        placeholder="Password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-      />
-      <button onClick={handleRegister}>Register</button>
-      <button onClick={handleLogin}>Login</button>
-      <button onClick={handleLogout}>Logout</button>
-      {user && <p>Welcome, {user.email}</p>}
+    <div className="auth-container">
+      <div className="auth-box">
+        <div className="auth-logo">🔺</div>
+        <h2 className="auth-title">Connexion</h2>
+        {error && <p className="auth-error">{error}</p>}
+        <input
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          className="auth-input"
+        />
+        <input
+          type="password"
+          placeholder="Mot de passe"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          className="auth-input"
+        />
+        <button onClick={handleLogin} className="auth-button">
+          Se connecter
+        </button>
+        <div className="auth-footer">
+          <p>
+            Pas encore de compte ? <span onClick={handleRegister} className="auth-link">S'inscrire</span>
+          </p>
+          <p>
+            Mot de passe oublié ? <span className="auth-link">Réinitialiser</span>
+          </p>
+        </div>
+      </div>
     </div>
   );
 }
