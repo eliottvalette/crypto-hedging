@@ -5,8 +5,10 @@ import { UserContext } from '../components/UserContext';
 function Auth() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState(''); // Added state for confirm password
   const [error, setError] = useState('');
   const {user, setUser } = useContext(UserContext);
+  const [isRegistering, setIsRegistering] = useState(false);
 
   const validateEmail = (email) => {
     const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -20,6 +22,10 @@ function Auth() {
     }
     if (password.length < 6) {
       setError('Password must be at least 6 characters');
+      return;
+    }
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
       return;
     }
     setError('');
@@ -61,37 +67,83 @@ function Auth() {
     }
   };
 
+  const toggleAuth = () => {
+    setIsRegistering(!isRegistering);
+  }
+
   return (
     <div className="auth-container">
       <div className="auth-box">
-        <img src="src/assets/shield.png" alt="lock" className="auth-img" />
-        <h2 className="auth-title">Connexion</h2>
-        {error && <p className="auth-error">{error}</p>}
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="auth-input"
-        />
-        <input
-          type="password"
-          placeholder="Mot de passe"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="auth-input"
-        />
-        <button onClick={handleLogin} className="auth-button">
-          Se connecter
-        </button>
-        <div className="auth-footer">
-          <p>
-            Pas encore de compte ? <span onClick={handleRegister} className="auth-link">S'inscrire</span>
-          </p>
-          <p>
-            Mot de passe oublié ? <span className="auth-link">Réinitialiser</span>
-          </p>
-        </div>
+        {isRegistering ? (
+          <>
+            <img src="src/assets/shield.png" alt="lock" className="auth-img" />
+            <h2 className="auth-title">Login</h2>
+            {error && <p className="auth-error">{error}</p>}
+            <input
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="auth-input"
+            />
+            <input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="auth-input"
+            />
+            <button onClick={handleLogin} className="auth-button">
+              Login
+            </button>
+            <div className="auth-footer">
+              <p>
+                No account yet? <span onClick={toggleAuth} className="auth-link">Sign up</span>
+              </p>
+              <p>
+                Forgot password? <span className="auth-link">Reset</span>
+              </p>
+            </div>
+          </>
+        ) : (
+          <>
+            <img src="src/assets/shield.png" alt="lock" className="auth-img" />
+            <h2 className="auth-title">Sign Up</h2>
+            {error && <p className="auth-error">{error}</p>}
+            <input
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="auth-input"
+            />  
+            <input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="auth-input"
+            />
+            <input
+              type="password"
+              placeholder="Confirm Password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              className="auth-input"
+            />
+            <button onClick={handleRegister} className="auth-button">
+              Sign Up
+            </button>
+            <div className="auth-footer">
+              <p>
+                Already have an account? <span onClick={toggleAuth} className="auth-link">Login</span>
+              </p>
+              <p>
+                Forgot password? <span className="auth-link">Reset</span>
+              </p>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
