@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import Select from 'react-select';
 import { calculateShortHedgeParameters } from '../utils/hedging';
-import TrendsChart from './TrendsChart';
 import { getSpotPrice, getAvailableSymbols } from '../utils/data';
 import { customStyles } from '../utils/config';
 

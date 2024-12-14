@@ -34,7 +34,7 @@ function Dashboard() {
         {
           "autosize": true,
           "symbol": "BITSTAMP:BTCUSD",
-          "interval": "D",
+          "interval": "H",
           "timezone": "Etc/UTC",
           "theme": "dark",
           "style": "1",
