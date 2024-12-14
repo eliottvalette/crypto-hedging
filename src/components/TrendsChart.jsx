@@ -2,11 +2,14 @@ import PropTypes from 'prop-types';
 import Chart from 'react-apexcharts';
 import trends from '../utils/trends';
 import { calculatePayoutFuture, calculatePayoutShort } from '../utils/hedging';
+import { useState } from 'react';
 
 const TrendsChart = ({ trend, quantity, hedgingRatio, type, marginRate, spotEntryPrice, futuresEntryPrice }) => {
+  const [twoWeeksVolume, setTwoWeeksVolume] = useState(0);
+  
   const spot_entry_price = parseFloat(spotEntryPrice)|| 0;
   const futures_entry_price = parseFloat(futuresEntryPrice)|| 0;
-
+  
   // Adjust series data and calculate payouts
   const adjustedSeriesData = trends[trend].map((dataPoint) => {
     const [open, high, low, close] = dataPoint.y.map((value) =>
@@ -23,7 +26,8 @@ const TrendsChart = ({ trend, quantity, hedgingRatio, type, marginRate, spotEntr
         spot_entry_price,
         parseFloat(close), // Use the adjusted closing price for this data point
         hedgingRatio,
-        marginRate
+        marginRate,
+        twoWeeksVolume
       ));
     } else {
       ({ spotPayout, hedgedPayout } = calculatePayoutFuture(
@@ -31,7 +35,8 @@ const TrendsChart = ({ trend, quantity, hedgingRatio, type, marginRate, spotEntr
         spot_entry_price,
         futures_entry_price,
         hedgingRatio,
-        parseFloat(pricePercentageChange) // Use the adjusted closing price for this data point
+        parseFloat(pricePercentageChange),
+        twoWeeksVolume
       ));
     }
 

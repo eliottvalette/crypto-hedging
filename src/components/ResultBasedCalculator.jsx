@@ -14,6 +14,7 @@ const ResultBasedShortHedging = () => {
     const [spotEntryPrice, setSpotEntryPrice] = useState(0);
     const [symbol, setSymbol] = useState({ value: 'BTCUSDT', label: 'BTCUSDT' });
     const [availableSymbols, setAvailableSymbols] = useState([]);
+    const [twoWeeksVolume, setTwoWeeksVolume] = useState(0);
     const [error, setError] = useState('');
 
     useEffect(() => {
@@ -47,7 +48,8 @@ const ResultBasedShortHedging = () => {
                 desiredPayout,
                 availableMargin,
                 riskAversion,
-                spotEntryPrice
+                spotEntryPrice,
+                twoWeeksVolume
             );
             console.log('Calculated Parameters:', params);
             setCalculatedParams(params);
@@ -111,14 +113,6 @@ const ResultBasedShortHedging = () => {
                     <p>Leverage: {calculatedParams.leverage}</p>
                     <p>Spot Entry Price: ${calculatedParams.spotEntryPrice}</p>
                     <p>Margin Required: ${calculatedParams.marginRequired}</p>
-                    <TrendsChart
-                        trend={targetReturn > 0 ? 'upTrend' : targetReturn < 0 ? 'downTrend' : 'neutralTrend'}
-                        quantity={Number(calculatedParams.quantity)}
-                        hedgingRatio={Number(calculatedParams.hedgingRatio)}
-                        type="resultBasedShort"
-                        marginRate={Number(calculatedParams.marginRate)}
-                        spotEntryPrice={Number(spotEntryPrice)}
-                    />
                 </div>
             )}
 

@@ -21,6 +21,7 @@ const HedgingScenarios = () => {
     const [marginRate, setMarginRate] = useState(0.1);
     const [trend, setTrend] = useState('upTrend');
     const [totalInvested, setTotalInvested] = useState(0);
+    const [twoWeeksVolume, setTwoWeeksVolume] = useState(0);
 
     useEffect(() => {
         async function fetchSymbols() {
@@ -87,7 +88,7 @@ const HedgingScenarios = () => {
         const results = {};
     
         Object.entries(scenarios).forEach(([scenario, changePercent]) => {
-            results[scenario] = calculatePayoutFuture(Q, P_spot_achat, P_futures_entree, h, changePercent);
+            results[scenario] = calculatePayoutFuture(Q, P_spot_achat, P_futures_entree, h, changePercent, twoWeeksVolume);
         });
     
         setSpotPayouts({
@@ -137,7 +138,7 @@ const HedgingScenarios = () => {
         const results = {};
     
         Object.entries(scenarios).forEach(([scenario, exitPrice]) => {
-            results[scenario] = calculatePayoutShort(Q, P_spot_achat, exitPrice, h, margin);
+            results[scenario] = calculatePayoutShort(Q, P_spot_achat, exitPrice, h, margin, twoWeeksVolume);
         });
     
         setSpotPayouts({
