@@ -71,14 +71,14 @@ const TrendsChart = ({ trend, quantity, hedgingRatio, type, marginRate, spotEntr
         const hedgedColor = parseFloat(hedgedPayout) >= 0 ? '#17a2b8' : '#ffc107'; // Blue for positive, yellow for negative
 
         return `
-          <div class="custom-tooltip">
-            <div style="margin-bottom: 8px; font-weight: bold; text-align: center;">Payouts</div>
+          <div class="custom-tooltip" style="padding: 10px; border-radius: 5px; width: 11rem">
+            <div style="margin-bottom: 3px; font-weight: bold; text-align: center; color: black;">Payouts</div>
             <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
-              <span>Without Hedge:</span>
+              <span style="color: black">Without Hedge: </span>
               <span style="color: ${spotColor};">$${spotPayout}</span>
             </div>
             <div style="display: flex; justify-content: space-between;">
-              <span>With Hedge:</span>
+              <span style="color: black">With Hedge: </span>
               <span style="color: ${hedgedColor};">$${hedgedPayout}</span>
             </div>
           </div>

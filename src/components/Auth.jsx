@@ -1,14 +1,22 @@
-import { useState, useContext } from 'react';
-import { register, login, logout, googleSignIn } from '../utils/auth';
+import { useState, useContext, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { register, login, googleSignIn } from '../utils/auth';
 import { UserContext } from '../components/UserContext';
 
 function Auth() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState(''); // Added state for confirm password
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const {user, setUser } = useContext(UserContext);
   const [isRegistering, setIsRegistering] = useState(false);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (user) {
+      navigate('/'); // Redirect to home page if user is logged in
+    }
+  }, [user, navigate]);
 
   const validateEmail = (email) => {
     const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -54,16 +62,6 @@ function Auth() {
     } catch (error) {
       console.error('Error logging in:', error);
       setError('Error logging in user');
-    }
-  };
-
-  const handleLogout = async () => {
-    try {
-      await logout();
-      setUser(null);
-    } catch (error) {
-      console.error('Error logging out:', error);
-      setError('Error logging out user');
     }
   };
 
