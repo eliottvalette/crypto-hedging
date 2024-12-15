@@ -279,11 +279,6 @@ const HedgingScenarios = () => {
                                 spotEntryPrice={spotEntryPrice}
                                 generateNewTrend={generateNewTrend}
                             />
-                            <h3>Optimal Results</h3>
-                            <div className="optimal-results">
-                                <p>Optimal Leverage: {optimalLeverage}</p>
-                                <p>Total Invested: ${totalInvested}</p>
-                            </div>
                         </div>
                     )}
                 </>
@@ -381,11 +376,6 @@ const HedgingScenarios = () => {
                                 futuresEntryPrice={futuresEntryPrice}
                                 generateNewTrend={generateNewTrend}
                             />
-                            <h3>Optimal Results</h3>
-                            <div className="optimal-results">
-                                <p>Optimal Leverage: {optimalLeverage}</p>
-                                <p>Total Invested: ${totalInvested}</p>
-                            </div>
                         </div>
                     )}
                 </>
