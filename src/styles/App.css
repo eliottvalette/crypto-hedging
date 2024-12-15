@@ -483,3 +483,16 @@ main {
     height: 40vh;
   }
 }
+
+.reload-button {
+  background: none;
+  border: none;
+  color: var(--color-light-green);
+  cursor: pointer;
+  font-size: 1.5rem;
+  transition: transform 0.3s ease;
+}
+
+.reload-button:hover {
+  transform: rotate(90deg);
+}

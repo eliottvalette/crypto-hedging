@@ -1,8 +1,9 @@
 import PropTypes from 'prop-types';
 import Chart from 'react-apexcharts';
-import { savedTrends, generateNewTrend } from '../utils/trends';
+import { savedTrends } from '../utils/trends';
 import { calculatePayoutFuture, calculatePayoutShort } from '../utils/hedging';
 import { useState, useEffect } from 'react';
+import { FaRedo } from 'react-icons/fa';
 
 const TrendsChart = ({ trend, quantity, hedgingRatio, type, marginRate, spotEntryPrice, futuresEntryPrice, generateNewTrend }) => {
   const [twoWeeksVolume, setTwoWeeksVolume] = useState(0);
@@ -107,7 +108,9 @@ const TrendsChart = ({ trend, quantity, hedgingRatio, type, marginRate, spotEntr
 
   return (
     <div id="chart">
-      <button onClick={generateTrend}>Generate New Trend</button>
+      <button onClick={generateTrend} className="reload-button">
+        <FaRedo />
+      </button>
       <Chart options={options} series={[{ data: adjustedSeriesData }]} type="candlestick" height={350} />
     </div>
   );
