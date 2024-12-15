@@ -29,7 +29,7 @@ body::before {
   width: 100%;
   height: 100%;
   z-index: -1;
-  background: var(--color-dark-teal) url('src/assets/back_lines.svg');
+  background: var(--color-dark-teal) url('/back_lines.svg');
   background-size: 100%;
   background-repeat: no-repeat;
   background-position: center bottom;
