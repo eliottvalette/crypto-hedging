@@ -16,6 +16,12 @@ const ResultBasedShortHedging = () => {
     const [twoWeeksVolume, setTwoWeeksVolume] = useState(0);
     const [error, setError] = useState('');
 
+    const riskAversionOptions = [
+        { value: 'low', label: 'Low' },
+        { value: 'medium', label: 'Medium' },
+        { value: 'high', label: 'High' }
+    ];
+
     useEffect(() => {
         async function fetchSymbols() {
             const symbols = await getAvailableSymbols();
@@ -96,11 +102,13 @@ const ResultBasedShortHedging = () => {
             />
 
             <label>Risk Aversion</label>
-            <select value={riskAversion || 'medium'} onChange={(e) => setRiskAversion(e.target.value)} className='risk-select'>
-                <option value="low">Low</option>
-                <option value="medium">Medium</option>
-                <option value="high">High</option>
-            </select>
+            <Select
+                value={riskAversionOptions.find(option => option.value === riskAversion)}
+                onChange={(option) => setRiskAversion(option.value)}
+                options={riskAversionOptions}
+                className="currency-select"
+                styles={customStyles}
+            />
 
             <button onClick={handleCalculateHedge} className='calculate-button'>Calculate Hedge</button>
 

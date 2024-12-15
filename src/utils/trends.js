@@ -43,4 +43,4 @@ const savedTrends = {
   sideTrend: goodSideTrend
 };
 
-export { savedTrends, generateStockPrices, generateNewTrend };
+export { savedTrends, generateNewTrend };

@@ -2,18 +2,26 @@ import PropTypes from 'prop-types';
 import Chart from 'react-apexcharts';
 import { savedTrends, generateNewTrend } from '../utils/trends';
 import { calculatePayoutFuture, calculatePayoutShort } from '../utils/hedging';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
-const TrendsChart = ({ trend, quantity, hedgingRatio, type, marginRate, spotEntryPrice, futuresEntryPrice }) => {
+const TrendsChart = ({ trend, quantity, hedgingRatio, type, marginRate, spotEntryPrice, futuresEntryPrice, generateNewTrend }) => {
   const [twoWeeksVolume, setTwoWeeksVolume] = useState(0);
   const [seriesData, setSeriesData] = useState(savedTrends[trend]);
 
-  const spot_entry_price = parseFloat(spotEntryPrice)|| 0;
-  const futures_entry_price = parseFloat(futuresEntryPrice)|| 0;
+  const spot_entry_price = parseFloat(spotEntryPrice) || 0;
+  const futures_entry_price = parseFloat(futuresEntryPrice) || 0;
 
   const generateTrend = () => {
-    savedTrends = generateNewTrend();
+    const newTrends = generateNewTrend();
+    savedTrends['upTrend'] = newTrends['upTrend'];
+    savedTrends['downTrend'] = newTrends['downTrend'];
+    savedTrends['sideTrend'] = newTrends['sideTrend'];
+    setSeriesData(newTrends[trend]);
   };
+
+  useEffect(() => {
+    setSeriesData(savedTrends[trend]);
+  }, [trend]);
 
   // Adjust series data and calculate payouts
   const adjustedSeriesData = seriesData.map((dataPoint) => {
@@ -23,7 +31,7 @@ const TrendsChart = ({ trend, quantity, hedgingRatio, type, marginRate, spotEntr
 
     let spotPayout = 0;
     let hedgedPayout = 0;
-    const pricePercentageChange = (close - spot_entry_price)/ spot_entry_price * 100;
+    const pricePercentageChange = (close - spot_entry_price) / spot_entry_price * 100;
 
     if (type === 'spot') {
       ({ spotPayout, hedgedPayout } = calculatePayoutShort(
@@ -114,6 +122,7 @@ TrendsChart.propTypes = {
   marginRate: PropTypes.number,
   spotEntryPrice: PropTypes.number.isRequired,
   futuresEntryPrice: PropTypes.number,
+  generateNewTrend: PropTypes.func.isRequired,
 };
 
 export default TrendsChart;

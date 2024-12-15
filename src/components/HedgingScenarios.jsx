@@ -4,6 +4,7 @@ import { calculatePayoutFuture, calculatePayoutShort } from '../utils/hedging';
 import { getSpotPrice, getFuturesPrice, getAvailableSymbols } from '../utils/data';
 import TrendsChart from './TrendsChart';
 import { customStyles } from '../utils/config';
+import { savedTrends, generateNewTrend } from '../utils/trends';
 
 const HedgingScenarios = () => {
     const [hedgeType, setHedgeType] = useState('spot');
@@ -22,6 +23,13 @@ const HedgingScenarios = () => {
     const [trend, setTrend] = useState('upTrend');
     const [totalInvested, setTotalInvested] = useState(0);
     const [twoWeeksVolume, setTwoWeeksVolume] = useState(0);
+    const [riskAversion, setRiskAversion] = useState('medium');
+
+    const riskAversionOptions = [
+        { value: 'low', label: 'Low' },
+        { value: 'medium', label: 'Medium' },
+        { value: 'high', label: 'High' }
+    ];
 
     useEffect(() => {
         async function fetchSymbols() {
@@ -227,6 +235,14 @@ const HedgingScenarios = () => {
                         value={hedgingRatio}
                         onChange={(e) => setHedgingRatio(e.target.value)}
                     />
+                    <label>Risk Aversion</label>
+                    <Select
+                        value={riskAversionOptions.find(option => option.value === riskAversion)}
+                        onChange={(option) => setRiskAversion(option.value)}
+                        options={riskAversionOptions}
+                        className="currency-select"
+                        styles={customStyles}
+                    />
                     <button onClick={handleCalculateShort} className='calculate-button'>Calculate</button>
     
                     {spotPayouts.up !== null && (
@@ -252,12 +268,14 @@ const HedgingScenarios = () => {
                             </div>
                             <TrendsChart 
                                 className="trends-chart" 
+                                symbol={symbol.value}
                                 trend={trend} 
                                 quantity={quantity} 
                                 hedgingRatio={hedgingRatio} 
                                 type={'spot'} 
                                 marginRate={marginRate} 
                                 spotEntryPrice={spotEntryPrice}
+                                generateNewTrend={generateNewTrend}
                             />
                         </div>
                     )}
@@ -315,6 +333,14 @@ const HedgingScenarios = () => {
                         value={hedgingRatio}
                         onChange={(e) => setHedgingRatio(e.target.value)}
                     />
+                    <label>Risk Aversion</label>
+                    <Select
+                        value={riskAversionOptions.find(option => option.value === riskAversion)}
+                        onChange={(option) => setRiskAversion(option.value)}
+                        options={riskAversionOptions}
+                        className="currency-select"
+                        styles={customStyles}
+                    />
                     <button onClick={handleCalculateFuture} className='calculate-button'>Calculate</button>
     
                     {spotPayouts.up !== null && (
@@ -338,12 +364,15 @@ const HedgingScenarios = () => {
                                 </div>
                             </div>
                             <TrendsChart 
+                                className="trends-chart" 
+                                symbol={symbol.value}
                                 trend={trend} 
                                 quantity={quantity} 
                                 hedgingRatio={hedgingRatio} 
                                 type={'future'} 
                                 spotEntryPrice={spotEntryPrice}
                                 futuresEntryPrice={futuresEntryPrice}
+                                generateNewTrend={generateNewTrend}
                             />
                         </div>
                     )}
