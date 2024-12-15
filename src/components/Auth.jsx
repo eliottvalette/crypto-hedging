@@ -118,7 +118,7 @@ function Auth() {
           </>
         ) : (
           <>
-            <img src="src/assets/shield.png" alt="lock" className="auth-img" />
+            <img src="/shield.png" alt="lock" className="auth-img" />
             <h2 className="auth-title">Sign Up</h2>
             {error && <p className="auth-error">{error}</p>}
             <input
