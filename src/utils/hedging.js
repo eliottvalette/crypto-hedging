@@ -41,9 +41,12 @@ function calculateFEE_RATES(twoWeeksVolume) {
     }
 }
 
+function formatNumber(number) {
+    return number.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
 // Adjusted Calculate payouts for Futures Hedging
 export function calculatePayoutFuture(quantity, spotEntryPrice, futuresEntryPrice, spotExitPrice, futuresExitPrice, hedgingRatio, twoWeeksVolume) {
-    console.log("Calculating payouts for futures hedging:", { quantity, spotEntryPrice, futuresEntryPrice, spotExitPrice, futuresExitPrice, hedgingRatio, twoWeeksVolume });
     const fees = calculateFEE_RATES(twoWeeksVolume);
 
     const Q = parseFloat(quantity) || 1; // Total quantity
@@ -77,9 +80,9 @@ export function calculatePayoutFuture(quantity, spotEntryPrice, futuresEntryPric
 
     // Return results with proper formatting
     return {
-        spotPayout: parseFloat(spotPayout.toFixed(2)),
-        hedgedPayout: parseFloat(hedgedPayout.toFixed(2)),
-        totalInvested: parseFloat(totalInvested.toFixed(2)),
+        spotPayout: formatNumber(spotPayout),
+        hedgedPayout: formatNumber(hedgedPayout),
+        totalInvested: formatNumber(totalInvested),
     };
 }
 
@@ -119,10 +122,10 @@ export function calculatePayoutShort(quantity, spotEntryPrice, spotExitPrice, he
     const totalInvested = Q * P_spot_achat;
 
     return {
-        spotPayout: parseFloat(P_L_long.toFixed(2)),
-        hedgedPayout: parseFloat(hedgedPayout.toFixed(2)),
-        optimalLeverage: parseFloat(optimalLeverage.toFixed(2)),
-        totalInvested: parseFloat(totalInvested.toFixed(2)),
+        spotPayout: formatNumber(P_L_long),
+        hedgedPayout: formatNumber(hedgedPayout),
+        optimalLeverage: formatNumber(optimalLeverage),
+        totalInvested: formatNumber(totalInvested),
     };
 }
 
@@ -152,10 +155,55 @@ export const calculateShortHedgeParameters = (
     }
 
     return {
-        quantity: quantity.toFixed(2),
-        hedgingRatio: adjustedHedgingRatio.toFixed(2),
-        leverage: leverage.toFixed(2),
-        spotEntryPrice: spotEntryPrice.toFixed(2),
-        marginRequired: marginRequired.toFixed(2),
+        quantity: formatNumber(quantity),
+        hedgingRatio: formatNumber(adjustedHedgingRatio),
+        leverage: formatNumber(leverage),
+        spotEntryPrice: formatNumber(spotEntryPrice),
+        marginRequired: formatNumber(marginRequired),
+    };
+};
+
+export const calculateBestPayout = (seriesData, type, quantity, spot_entry_price, futures_entry_price, hedgingRatio, marginRate, twoWeeksVolume) => {
+    if (!seriesData || seriesData.length === 0) {
+        console.error("Empty or invalid seriesData");
+        return { bestSpotPayout: 0, bestHedgedPayout: 0 };
+    }
+
+    const closingPrices = seriesData.map(dataPoint => parseFloat(dataPoint.y[3]));
+    const highestClose = Math.max(...closingPrices);
+    const lowestClose = Math.min(...closingPrices);
+
+    if (isNaN(highestClose) || isNaN(lowestClose)) {
+        console.error("Invalid closing prices:", { highestClose, lowestClose });
+        return { bestSpotPayout: 0, bestHedgedPayout: 0 };
+    }
+
+    let bestSpotPayout = 0;
+    let bestHedgedPayout = 0;
+
+    if (type === 'spot') {
+        ({ spotPayout: bestSpotPayout, hedgedPayout: bestHedgedPayout } = calculatePayoutShort(
+            quantity,
+            spot_entry_price,
+            highestClose,
+            hedgingRatio,
+            marginRate,
+            twoWeeksVolume
+        ));
+    } else if (type === 'future') {
+        ({ spotPayout: bestSpotPayout, hedgedPayout: bestHedgedPayout } = calculatePayoutFuture(
+            quantity,
+            spot_entry_price,
+            futures_entry_price,
+            highestClose,
+            lowestClose,
+            hedgingRatio,
+            twoWeeksVolume
+        ));
+    }
+
+    return {
+        bestSpotPayout: formatNumber(bestSpotPayout),
+        bestHedgedPayout: formatNumber(bestHedgedPayout),
     };
 };

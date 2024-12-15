@@ -34,7 +34,7 @@ const ResultBasedShortHedging = () => {
     useEffect(() => {
         async function fetchPrices() {
             const spotPrice = await getSpotPrice(symbol.value);
-            setSpotEntryPrice(spotPrice);
+            setSpotEntryPrice(parseFloat(spotPrice));
         }
         fetchPrices();
     }, [symbol]);

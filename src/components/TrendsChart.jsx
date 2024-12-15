@@ -1,12 +1,12 @@
 import PropTypes from 'prop-types';
 import Chart from 'react-apexcharts';
 import { savedTrends } from '../utils/trends';
-import { calculatePayoutFuture, calculatePayoutShort } from '../utils/hedging';
+import { calculatePayoutFuture, calculatePayoutShort, calculateBestPayout } from '../utils/hedging';
 import { useState, useEffect } from 'react';
 import { FaRedo } from 'react-icons/fa';
 import 'apexcharts/dist/apexcharts.css';
 
-const TrendsChart = ({ trend, quantity, hedgingRatio, type, marginRate, spotEntryPrice, futuresEntryPrice, generateNewTrend, setAdjustedPayout, setOriginalClosePrice, setHedgeClosePrice }) => {
+const TrendsChart = ({ trend, quantity, hedgingRatio, type, marginRate, spotEntryPrice, futuresEntryPrice, generateNewTrend, setAdjustedPayout, setOriginalClosePrice, setHedgeClosePrice, setBestPayout }) => {
   const [twoWeeksVolume, setTwoWeeksVolume] = useState(0);
   const [seriesData, setSeriesData] = useState(savedTrends[trend]);
   const [isClosingHedge, setIsClosingHedge] = useState(false);
@@ -14,6 +14,10 @@ const TrendsChart = ({ trend, quantity, hedgingRatio, type, marginRate, spotEntr
   const futures_entry_price = parseFloat(futuresEntryPrice) || 0;
   const [originalClosePriceTemp, setOriginalClosePriceTemp] = useState(null);
   const [hedgeClosePriceTemp, setHedgeClosePriceTemp] = useState(null);
+
+  const formatNumber = (number) => {
+    return number.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  };
 
   const generateTrend = () => {
     const newTrends = generateNewTrend();
@@ -38,7 +42,6 @@ const TrendsChart = ({ trend, quantity, hedgingRatio, type, marginRate, spotEntr
 
     let spotPayout = 0;
     let hedgedPayout = 0;
-    const pricePercentageChange = (close - spot_entry_price) / spot_entry_price * 100;
 
     if (type === 'spot') {
       ({ spotPayout, hedgedPayout } = calculatePayoutShort(
@@ -65,10 +68,26 @@ const TrendsChart = ({ trend, quantity, hedgingRatio, type, marginRate, spotEntr
       ...dataPoint,
       x: timestamp,
       y: [open, high, low, close],
-      spotPayout: spotPayout.toFixed(2),
-      hedgedPayout: hedgedPayout.toFixed(2),
+      spotPayout: formatNumber(spotPayout),
+      hedgedPayout: formatNumber(hedgedPayout),
     };
   });
+
+  useEffect(() => {
+    console.log("Adjusted series data:", adjustedSeriesData);
+    const { bestSpotPayout, bestHedgedPayout } = calculateBestPayout(
+        adjustedSeriesData,
+        type,
+        quantity,
+        spot_entry_price,
+        futures_entry_price,
+        hedgingRatio,
+        marginRate,
+        twoWeeksVolume
+    );
+    console.log("Best payouts calculated:", { bestSpotPayout, bestHedgedPayout });
+    setBestPayout({bestSpotPayout, bestHedgedPayout});
+  }, [isClosingHedge, type, seriesData]);
 
   // Chart options
   const options = {
@@ -146,14 +165,19 @@ const TrendsChart = ({ trend, quantity, hedgingRatio, type, marginRate, spotEntr
     if (originalClosePriceTemp !== null && hedgeClosePriceTemp !== null) {
       const payout = type === 'spot' 
         ? calculatePayoutShort(quantity, spot_entry_price, originalClosePriceTemp, hedgingRatio, marginRate, twoWeeksVolume).hedgedPayout 
-        : calculatePayoutFuture(quantity, spot_entry_price, futures_entry_price, originalClosePriceTemp, hedgeClosePriceTemp, hedgingRatio, twoWeeksVolume ).hedgedPayout;
-  
-      setAdjustedPayout(payout.toFixed(2));
-  
+        : calculatePayoutFuture(quantity, spot_entry_price, futures_entry_price, originalClosePriceTemp, hedgeClosePriceTemp, hedgingRatio, twoWeeksVolume).hedgedPayout;
+
+      const parsedPayout = parseFloat(payout.replace(/,/g, ''));
+      if (!isNaN(parsedPayout)) {
+        setAdjustedPayout(parsedPayout);
+      } else {
+        console.error('Payout is not a valid number:', payout);
+      }
+
       setOriginalClosePrice(originalClosePriceTemp);
       setHedgeClosePrice(hedgeClosePriceTemp);
     }
-  }, [originalClosePriceTemp, hedgeClosePriceTemp, quantity, spot_entry_price, futures_entry_price, hedgingRatio, marginRate, twoWeeksVolume, type, setAdjustedPayout, setOriginalClosePrice, setHedgeClosePrice]);
+  }, [type, setAdjustedPayout, setOriginalClosePrice, setHedgeClosePrice, originalClosePriceTemp, hedgeClosePriceTemp]);
 
   return (
     <div id="chart">
@@ -181,6 +205,9 @@ TrendsChart.propTypes = {
   futuresEntryPrice: PropTypes.number,
   generateNewTrend: PropTypes.func.isRequired,
   setAdjustedPayout: PropTypes.func.isRequired,
+  setOriginalClosePrice: PropTypes.func.isRequired,
+  setHedgeClosePrice: PropTypes.func.isRequired,
+  setBestPayout: PropTypes.func.isRequired,
 };
 
 export default TrendsChart;

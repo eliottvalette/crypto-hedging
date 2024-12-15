@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import Select from 'react-select';
-import { calculatePayoutFuture, calculatePayoutShort } from '../utils/hedging';
+import { calculatePayoutFuture, calculatePayoutShort, calculateBestPayout } from '../utils/hedging';
 import { getSpotPrice, getFuturesPrice, getAvailableSymbols } from '../utils/data';
 import TrendsChart from './TrendsChart';
 import { customStyles } from '../utils/config';
@@ -28,12 +28,17 @@ const HedgingScenarios = () => {
     const [adjustedPayout, setAdjustedPayout] = useState(null);
     const [originalClosePrice, setOriginalClosePrice] = useState(null);
     const [hedgeClosePrice, setHedgeClosePrice] = useState(null);
+    const [bestPayout, setBestPayout] = useState({ bestSpotPayout: 0, bestHedgedPayout: 0 });
 
     const riskAversionOptions = [
         { value: 'low', label: 'Low' },
         { value: 'medium', label: 'Medium' },
         { value: 'high', label: 'High' }
     ];
+
+    const formatNumber = (number) => {
+        return number.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    };
 
     useEffect(() => {
         async function fetchSymbols() {
@@ -52,13 +57,13 @@ const HedgingScenarios = () => {
         async function fetchPrices() {
             try {
                 const spotPrice = await getSpotPrice(symbol.value, platform);
-                setSpotEntryPrice(spotPrice);
-    
+                setSpotEntryPrice(parseFloat(spotPrice));
+
                 const futuresPrice = await getFuturesPrice(symbol.value, platform);
                 if (futuresPrice === null || futuresPrice === undefined) {
                     throw new Error('Futures not available for the selected currency.');
                 }
-                setFuturesEntryPrice(futuresPrice);
+                setFuturesEntryPrice(parseFloat(futuresPrice));
                 setError('');
             } catch (error) {
                 console.error('Error fetching prices:', error);
@@ -100,7 +105,7 @@ const HedgingScenarios = () => {
         const results = {};
     
         Object.entries(scenarios).forEach(([scenario, exitPrice]) => {
-            results[scenario] = calculatePayoutFuture(Q, P_spot_achat, P_futures_entree, P_spot_achat, exitPrice, h, twoWeeksVolume);
+            results[scenario] = calculatePayoutFuture(Q, P_spot_achat, P_futures_entree, exitPrice, exitPrice, h, twoWeeksVolume);
         });
     
         setSpotPayouts({
@@ -252,22 +257,22 @@ const HedgingScenarios = () => {
                     {spotPayouts.up !== null && (
                         <div className="results-container">
                             <h2>Results for Short Position</h2>
-                            <p>Optimal Leverage: {optimalLeverage}</p>
+                            <p>Optimal Leverage: {formatNumber(optimalLeverage)}</p>
                             <div className="results-types-container">
                                 <div className={`results-up ${activeScenario === 'up' ? 'active' : ''}`} onClick={() => { setTrend('upTrend'); setActiveScenario('up'); }}>
                                     <h3>Up Scenario (+10%)</h3>
-                                    <p className="results-without">No Hedge: ${spotPayouts.up}</p>
-                                    <p>With Hedge: ${hedgedPayouts.up}</p>
+                                    <p className="results-without">No Hedge: ${formatNumber(spotPayouts.up)}</p>
+                                    <p>With Hedge: ${formatNumber(hedgedPayouts.up)}</p>
                                 </div>
                                 <div className={`results-down ${activeScenario === 'down' ? 'active' : ''}`} onClick={() => { setTrend('downTrend'); setActiveScenario('down'); }}>
                                     <h3>Down Scenario (-10%)</h3>
-                                    <p className="results-without">No Hedge: ${spotPayouts.down}</p>
-                                    <p>With Hedge: ${hedgedPayouts.down}</p>
+                                    <p className="results-without">No Hedge: ${formatNumber(spotPayouts.down)}</p>
+                                    <p>With Hedge: ${formatNumber(hedgedPayouts.down)}</p>
                                 </div>
                                 <div className={`results-neutral ${activeScenario === 'neutral' ? 'active' : ''}`} onClick={() => { setTrend('sideTrend'); setActiveScenario('neutral'); }}>
                                     <h3>Neutral Scenario (0%)</h3>
-                                    <p className="results-without">No Hedge: ${spotPayouts.neutral}</p>
-                                    <p>With Hedge: ${hedgedPayouts.neutral}</p>
+                                    <p className="results-without">No Hedge: ${formatNumber(spotPayouts.neutral)}</p>
+                                    <p>With Hedge: ${formatNumber(hedgedPayouts.neutral)}</p>
                                 </div>
                             </div>
                             <h3>Stock Trend Simualtion</h3>
@@ -285,13 +290,16 @@ const HedgingScenarios = () => {
                             setAdjustedPayout={setAdjustedPayout}
                             setOriginalClosePrice={setOriginalClosePrice}
                             setHedgeClosePrice={setHedgeClosePrice}
+                            setBestPayout= {setBestPayout}
                             />
                             {adjustedPayout && (
                             <div>
                                 <h3>Optimal Payout Calculation</h3>
-                                <p>Long Close Price: ${originalClosePrice?.toFixed(2)}</p>
-                                <p>Hedge Close Price: ${hedgeClosePrice?.toFixed(2)}</p>
-                                <h4>Payout: ${adjustedPayout}</h4>
+                                <p>Long Close Price: ${formatNumber(originalClosePrice)}</p>
+                                <p>Hedge Close Price: ${formatNumber(hedgeClosePrice)}</p>
+                                <h4>Payout: ${formatNumber(adjustedPayout)}</h4>
+                                <h4>Best Spot Payout: ${formatNumber(bestPayout.bestSpotPayout)}</h4>
+                                <h4>Best Hedged Payout: ${formatNumber(bestPayout.bestHedgedPayout)}</h4>
                             </div>
                             )}
                         </div>
@@ -366,18 +374,18 @@ const HedgingScenarios = () => {
                             <div className="results-types-container">
                                 <div className={`results-up ${activeScenario === 'up' ? 'active' : ''}`} onClick={() => { setTrend('upTrend'); setActiveScenario('up'); }}>
                                     <h3>Up Scenario (+10%)</h3>
-                                    <p className="results-without">No Hedge: ${spotPayouts.up}</p>
-                                    <p>With Hedge: ${hedgedPayouts.up}</p>
+                                    <p className="results-without">No Hedge: ${formatNumber(spotPayouts.up)}</p>
+                                    <p>With Hedge: ${formatNumber(hedgedPayouts.up)}</p>
                                 </div>
                                 <div className={`results-down ${activeScenario === 'down' ? 'active' : ''}`} onClick={() => { setTrend('downTrend'); setActiveScenario('down'); }}>
                                     <h3>Down Scenario (-10%)</h3>
-                                    <p className="results-without">No Hedge: ${spotPayouts.down}</p>
-                                    <p>With Hedge: ${hedgedPayouts.down}</p>
+                                    <p className="results-without">No Hedge: ${formatNumber(spotPayouts.down)}</p>
+                                    <p>With Hedge: ${formatNumber(hedgedPayouts.down)}</p>
                                 </div>
                                 <div className={`results-neutral ${activeScenario === 'neutral' ? 'active' : ''}`} onClick={() => { setTrend('sideTrend'); setActiveScenario('neutral'); }}>
                                     <h3>Neutral Scenario (0%)</h3>
-                                    <p className="results-without">No Hedge: ${spotPayouts.neutral}</p>
-                                    <p>With Hedge: ${hedgedPayouts.neutral}</p>
+                                    <p className="results-without">No Hedge: ${formatNumber(spotPayouts.neutral)}</p>
+                                    <p>With Hedge: ${formatNumber(hedgedPayouts.neutral)}</p>
                                 </div>
                             </div>
                             <TrendsChart 
@@ -394,13 +402,16 @@ const HedgingScenarios = () => {
                             setAdjustedPayout={setAdjustedPayout}
                             setOriginalClosePrice={setOriginalClosePrice}
                             setHedgeClosePrice={setHedgeClosePrice}
+                            setBestPayout= {setBestPayout}
                             />
                             {adjustedPayout && (
                             <div>
                                 <h3>Optimal Payout Calculation</h3>
-                                <p>Long Close Price: ${originalClosePrice?.toFixed(2)}</p>
-                                <p>Close Future Position: ${hedgeClosePrice?.toFixed(2)}</p>
-                                <h4>Payout: ${adjustedPayout}</h4>
+                                <p>Long Close Price: ${formatNumber(originalClosePrice)}</p>
+                                <p>Close Future Position: ${formatNumber(hedgeClosePrice)}</p>
+                                <h4>Payout: ${formatNumber(adjustedPayout)}</h4>
+                                <h4>Best Spot Payout: ${formatNumber(bestPayout.bestSpotPayout)}</h4>
+                                <h4>Best Hedged Payout: ${formatNumber(bestPayout.bestHedgedPayout)}</h4>
                             </div>
                             )}
                         </div>
