@@ -9,6 +9,9 @@ import 'apexcharts/dist/apexcharts.css';
 const TrendsChart = ({ trend, quantity, hedgingRatio, type, marginRate, spotEntryPrice, futuresEntryPrice, generateNewTrend }) => {
   const [twoWeeksVolume, setTwoWeeksVolume] = useState(0);
   const [seriesData, setSeriesData] = useState(savedTrends[trend]);
+  const [originalClosePrice, setOriginalClosePrice] = useState(null);
+  const [hedgeClosePrice, setHedgeClosePrice] = useState(null);
+  const [isClosingOriginal, setIsClosingOriginal] = useState(true);
 
   const spot_entry_price = parseFloat(spotEntryPrice) || 0;
   const futures_entry_price = parseFloat(futuresEntryPrice) || 0;
@@ -72,6 +75,19 @@ const TrendsChart = ({ trend, quantity, hedgingRatio, type, marginRate, spotEntr
     chart: {
       type: 'candlestick',
       height: 350,
+      events: {
+        click: (event, chartContext, config) => {
+          const dataPointIndex = config.dataPointIndex;
+          if (dataPointIndex !== -1) {
+            const closePrice = parseFloat(adjustedSeriesData[dataPointIndex].y[3]);
+            if (!originalClosePrice) {
+              setOriginalClosePrice(closePrice);
+            } else {
+              setHedgeClosePrice(closePrice);
+            }
+          }
+        }
+      },
     },
     title: {
       text: 'Price Movement',

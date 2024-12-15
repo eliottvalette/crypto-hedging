@@ -7,11 +7,11 @@ const generateStockPrices = (startPrice, drift, volatility, count) => {
     // Generate random change using GBM formula
     const randomShock = (Math.random() - 0.5) * volatility;
     const priceChange = drift + randomShock;
-    const close = parseFloat((previousClose * (1 + priceChange)).toFixed(4));
+    const close = parseFloat((previousClose * (1 + priceChange)));
 
     const open = previousClose;
-    const high = parseFloat((Math.max(open,close) + (Math.max(open,close)-Math.min(open,close))*(Math.random()**(1/2))).toFixed(4));
-    const low = parseFloat((Math.min(open,close) - (Math.max(open,close)-Math.min(open,close))*(Math.random()**(1/2))).toFixed(4));
+    const high = parseFloat((Math.max(open,close) + (Math.max(open,close)-Math.min(open,close))*(Math.random()**(1/2))));
+    const low = parseFloat((Math.min(open,close) - (Math.max(open,close)-Math.min(open,close))*(Math.random()**(1/2))));
 
     data.push({
       x: i + 1,
