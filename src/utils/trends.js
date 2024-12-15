@@ -1,7 +1,7 @@
 // trends.js
-import goodUpwardTrend from '../temp/good_upward_trend.json';
-import goodDownwardTrend from '../temp/good_downward_trend.json';
-import goodSideTrend from '../temp/good_side_trend.json';
+import goodUpwardTrend from './temp/Good_Downward_Trend.json';
+import goodDownwardTrend from './temp/Good_Downward_Trend.json';
+import goodSideTrend from './temp/Good_Side_Trend.json';
 
 const generateStockPrices = (startPrice, drift, volatility, count) => {
   const data = [];
