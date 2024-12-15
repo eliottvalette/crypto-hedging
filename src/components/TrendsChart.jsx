@@ -4,6 +4,7 @@ import { savedTrends } from '../utils/trends';
 import { calculatePayoutFuture, calculatePayoutShort } from '../utils/hedging';
 import { useState, useEffect } from 'react';
 import { FaRedo } from 'react-icons/fa';
+import 'apexcharts/dist/apexcharts.css';
 
 const TrendsChart = ({ trend, quantity, hedgingRatio, type, marginRate, spotEntryPrice, futuresEntryPrice, generateNewTrend }) => {
   const [twoWeeksVolume, setTwoWeeksVolume] = useState(0);
@@ -24,8 +25,11 @@ const TrendsChart = ({ trend, quantity, hedgingRatio, type, marginRate, spotEntr
     setSeriesData(savedTrends[trend]);
   }, [trend]);
 
+  const startDate = new Date()
+
   // Adjust series data and calculate payouts
-  const adjustedSeriesData = seriesData.map((dataPoint) => {
+  const adjustedSeriesData = seriesData.map((dataPoint, index) => {
+    const timestamp = new Date(startDate.getTime() + index * 24 * 60 * 60 * 1000).toISOString()
     const [open, high, low, close] = dataPoint.y.map((value) =>
       (value * spot_entry_price / 100).toFixed(2)
     );
@@ -38,7 +42,7 @@ const TrendsChart = ({ trend, quantity, hedgingRatio, type, marginRate, spotEntr
       ({ spotPayout, hedgedPayout } = calculatePayoutShort(
         quantity,
         spot_entry_price,
-        parseFloat(close), // Use the adjusted closing price for this data point
+        parseFloat(close),
         hedgingRatio,
         marginRate,
         twoWeeksVolume
@@ -56,6 +60,7 @@ const TrendsChart = ({ trend, quantity, hedgingRatio, type, marginRate, spotEntr
 
     return {
       ...dataPoint,
+      x: timestamp,
       y: [open, high, low, close],
       spotPayout: spotPayout.toFixed(2),
       hedgedPayout: hedgedPayout.toFixed(2),
@@ -80,12 +85,25 @@ const TrendsChart = ({ trend, quantity, hedgingRatio, type, marginRate, spotEntr
         enabled: true,
       },
     },
+    plotOptions: {
+      candlestick: {
+        wick: {
+          useFillColor: true,
+        },
+        colors: {
+          upward: '#00B746',
+          downward: '#EF403C'
+        },
+        fill: {
+          opacity: 1
+        }
+      },
+    },
     tooltip: {
       shared: true,
       custom: ({ dataPointIndex }) => {
         const { spotPayout, hedgedPayout } = adjustedSeriesData[dataPointIndex];
 
-        // Determine payout colors based on positive or negative values
         const spotColor = parseFloat(spotPayout) >= 0 ? '#28a745' : '#dc3545'; // Green for positive, red for negative
         const hedgedColor = parseFloat(hedgedPayout) >= 0 ? '#17a2b8' : '#ffc107'; // Blue for positive, yellow for negative
 
@@ -108,9 +126,11 @@ const TrendsChart = ({ trend, quantity, hedgingRatio, type, marginRate, spotEntr
 
   return (
     <div id="chart">
-      <button onClick={generateTrend} className="reload-button">
-        <FaRedo />
-      </button>
+      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
+        <button onClick={generateTrend} className="reload-button">
+          <FaRedo />
+        </button>
+      </div>
       <Chart options={options} series={[{ data: adjustedSeriesData }]} type="candlestick" height={350} />
     </div>
   );
