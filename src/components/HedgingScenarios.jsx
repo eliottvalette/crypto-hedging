@@ -236,17 +236,17 @@ const HedgingScenarios = () => {
                             <div className="results-types-container">
                                 <div className="results-up" onClick={() => setTrend('upTrend')}>
                                     <h3>Up Scenario (+10%)</h3>
-                                    <p className="results-without">Without Hedge: ${spotPayouts.up}</p>
+                                    <p className="results-without">No Hedge: ${spotPayouts.up}</p>
                                     <p>With Hedge: ${hedgedPayouts.up}</p>
                                 </div>
                                 <div className="results-down" onClick={() => setTrend('downTrend')}>
                                     <h3>Down Scenario (-10%)</h3>
-                                    <p className="results-without">Without Hedge: ${spotPayouts.down}</p>
+                                    <p className="results-without">No Hedge: ${spotPayouts.down}</p>
                                     <p>With Hedge: ${hedgedPayouts.down}</p>
                                 </div>
                                 <div className="results-neutral" onClick={() => setTrend('sideTrend')}>
                                     <h3>Neutral Scenario (0%)</h3>
-                                    <p className="results-without">Without Hedge: ${spotPayouts.neutral}</p>
+                                    <p className="results-without">No Hedge: ${spotPayouts.neutral}</p>
                                     <p>With Hedge: ${hedgedPayouts.neutral}</p>
                                 </div>
                             </div>
@@ -323,17 +323,17 @@ const HedgingScenarios = () => {
                             <div className="results-types-container">
                                 <div className="results-up" onClick={() => setTrend('upTrend')}>
                                     <h3>Up Scenario (+10%)</h3>
-                                    <p>No Hedge: ${spotPayouts.up}</p>
+                                    <p className="results-without">No Hedge: ${spotPayouts.up}</p>
                                     <p>With Hedge: ${hedgedPayouts.up}</p>
                                 </div>
                                 <div className="results-down" onClick={() => setTrend('downTrend')}>
                                     <h3>Down Scenario (-10%)</h3>
-                                    <p>No Hedge: ${spotPayouts.down}</p>
+                                    <p className="results-without">No Hedge: ${spotPayouts.down}</p>
                                     <p>With Hedge: ${hedgedPayouts.down}</p>
                                 </div>
                                 <div className="results-neutral" onClick={() => setTrend('sideTrend')}>
                                     <h3>Neutral Scenario (0%)</h3>
-                                    <p>No Hedge: ${spotPayouts.neutral}</p>
+                                    <p className="results-without">No Hedge: ${spotPayouts.neutral}</p>
                                     <p>With Hedge: ${hedgedPayouts.neutral}</p>
                                 </div>
                             </div>
