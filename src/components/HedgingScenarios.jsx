@@ -93,29 +93,29 @@ const HedgingScenarios = () => {
         setError('');
     
         const scenarios = {
-            up: 10,        // +10%
-            down: -10,     // -10%
-            neutral: 0     // 0%
+            up: P_spot_achat * 1.10,    // 10% up
+            down: P_spot_achat * 0.90,  // 10% down
+            neutral: P_spot_achat,      // No change
         };
         const results = {};
     
-        Object.entries(scenarios).forEach(([scenario, changePercent]) => {
-            results[scenario] = calculatePayoutFuture(Q, P_spot_achat, P_futures_entree, h, changePercent, twoWeeksVolume);
+        Object.entries(scenarios).forEach(([scenario, exitPrice]) => {
+            results[scenario] = calculatePayoutFuture(Q, P_spot_achat, P_futures_entree, P_spot_achat, exitPrice, h, twoWeeksVolume);
         });
     
         setSpotPayouts({
-            up: results.up.spotPayout.toFixed(2),
-            down: results.down.spotPayout.toFixed(2),
-            neutral: results.neutral.spotPayout.toFixed(2),
+            up: results.up.spotPayout,
+            down: results.down.spotPayout,
+            neutral: results.neutral.spotPayout,
         });
     
         setHedgedPayouts({
-            up: results.up.hedgedPayout.toFixed(2),
-            down: results.down.hedgedPayout.toFixed(2),
-            neutral: results.neutral.hedgedPayout.toFixed(2),
+            up: results.up.hedgedPayout,
+            down: results.down.hedgedPayout,
+            neutral: results.neutral.hedgedPayout,
         });
     
-        setTotalInvested(results.neutral.totalInvested.toFixed(2));
+        setTotalInvested(results.neutral.totalInvested);
     };
     
     const handleCalculateShort = () => {
@@ -154,19 +154,19 @@ const HedgingScenarios = () => {
         });
     
         setSpotPayouts({
-            up: results.up.spotPayout.toFixed(2),
-            down: results.down.spotPayout.toFixed(2),
-            neutral: results.neutral.spotPayout.toFixed(2),
+            up: results.up.spotPayout,
+            down: results.down.spotPayout,
+            neutral: results.neutral.spotPayout,
         });
     
         setHedgedPayouts({
-            up: results.up.hedgedPayout.toFixed(2),
-            down: results.down.hedgedPayout.toFixed(2),
-            neutral: results.neutral.hedgedPayout.toFixed(2),
+            up: results.up.hedgedPayout,
+            down: results.down.hedgedPayout,
+            neutral: results.neutral.hedgedPayout,
         });
     
-        setOptimalLeverage(results.neutral.optimalLeverage.toFixed(2));
-        setTotalInvested(results.neutral.totalInvested.toFixed(2));
+        setOptimalLeverage(results.neutral.optimalLeverage);
+        setTotalInvested(results.neutral.totalInvested);
     };
 
     return (
@@ -283,8 +283,8 @@ const HedgingScenarios = () => {
                             futuresEntryPrice={futuresEntryPrice}
                             generateNewTrend={generateNewTrend}
                             setAdjustedPayout={setAdjustedPayout}
-                            setOriginalClosePrice={setOriginalClosePrice} // Pass state updater
-                            setHedgeClosePrice={setHedgeClosePrice} // Pass state updater
+                            setOriginalClosePrice={setOriginalClosePrice}
+                            setHedgeClosePrice={setHedgeClosePrice}
                             />
                             {adjustedPayout && (
                             <div>
@@ -392,14 +392,14 @@ const HedgingScenarios = () => {
                             futuresEntryPrice={futuresEntryPrice}
                             generateNewTrend={generateNewTrend}
                             setAdjustedPayout={setAdjustedPayout}
-                            setOriginalClosePrice={setOriginalClosePrice} // Pass state updater
-                            setHedgeClosePrice={setHedgeClosePrice} // Pass state updater
+                            setOriginalClosePrice={setOriginalClosePrice}
+                            setHedgeClosePrice={setHedgeClosePrice}
                             />
                             {adjustedPayout && (
                             <div>
                                 <h3>Optimal Payout Calculation</h3>
                                 <p>Long Close Price: ${originalClosePrice?.toFixed(2)}</p>
-                                <p>Hedge Close Price: ${hedgeClosePrice?.toFixed(2)}</p>
+                                <p>Close Future Position: ${hedgeClosePrice?.toFixed(2)}</p>
                                 <h4>Payout: ${adjustedPayout}</h4>
                             </div>
                             )}

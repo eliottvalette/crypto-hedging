@@ -54,8 +54,9 @@ const TrendsChart = ({ trend, quantity, hedgingRatio, type, marginRate, spotEntr
         quantity,
         spot_entry_price,
         futures_entry_price,
+        parseFloat(close),
+        parseFloat(close),
         hedgingRatio,
-        parseFloat(pricePercentageChange),
         twoWeeksVolume
       ));
     }
@@ -145,14 +146,7 @@ const TrendsChart = ({ trend, quantity, hedgingRatio, type, marginRate, spotEntr
     if (originalClosePriceTemp !== null && hedgeClosePriceTemp !== null) {
       const payout = type === 'spot' 
         ? calculatePayoutShort(quantity, spot_entry_price, originalClosePriceTemp, hedgingRatio, marginRate, twoWeeksVolume).hedgedPayout 
-        : calculatePayoutFuture(
-            quantity,
-            spot_entry_price,
-            futures_entry_price,
-            hedgingRatio,
-            ((hedgeClosePriceTemp - spot_entry_price) / spot_entry_price) * 100,
-            twoWeeksVolume
-          ).hedgedPayout;
+        : calculatePayoutFuture(quantity, spot_entry_price, futures_entry_price, originalClosePriceTemp, hedgeClosePriceTemp, hedgingRatio, twoWeeksVolume ).hedgedPayout;
   
       setAdjustedPayout(payout.toFixed(2));
   
