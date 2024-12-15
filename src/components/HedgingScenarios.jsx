@@ -170,13 +170,13 @@ const HedgingScenarios = () => {
             <div className="buttons-container">
                 <button
                     className={hedgeType === 'spot' ? 'active' : ''}
-                    onClick={() => setHedgeType('spot')}
+                    onClick={() => {setHedgeType('spot'), spotPayouts.up = null}}
                 >
                     Short Position
                 </button>
                 <button
                     className={hedgeType === 'future' ? 'active' : ''}
-                    onClick={() => setHedgeType('future')}
+                    onClick={() => {setHedgeType('future'), spotPayouts.up = null}}
                 >
                     Futures Contract
                 </button>

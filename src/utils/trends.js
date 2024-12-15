@@ -1,5 +1,5 @@
 // trends.js
-import goodUpwardTrend from './temp/Good_Downward_Trend.json';
+import goodUpwardTrend from './temp/Good_Upward_Trend.json';
 import goodDownwardTrend from './temp/Good_Downward_Trend.json';
 import goodSideTrend from './temp/Good_Side_Trend.json';
 
