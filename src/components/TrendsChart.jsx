@@ -6,15 +6,14 @@ import { useState, useEffect } from 'react';
 import { FaRedo } from 'react-icons/fa';
 import 'apexcharts/dist/apexcharts.css';
 
-const TrendsChart = ({ trend, quantity, hedgingRatio, type, marginRate, spotEntryPrice, futuresEntryPrice, generateNewTrend }) => {
+const TrendsChart = ({ trend, quantity, hedgingRatio, type, marginRate, spotEntryPrice, futuresEntryPrice, generateNewTrend, setAdjustedPayout, setOriginalClosePrice, setHedgeClosePrice }) => {
   const [twoWeeksVolume, setTwoWeeksVolume] = useState(0);
   const [seriesData, setSeriesData] = useState(savedTrends[trend]);
-  const [originalClosePrice, setOriginalClosePrice] = useState(null);
-  const [hedgeClosePrice, setHedgeClosePrice] = useState(null);
-  const [isClosingOriginal, setIsClosingOriginal] = useState(true);
-
+  const [isClosingHedge, setIsClosingHedge] = useState(false);
   const spot_entry_price = parseFloat(spotEntryPrice) || 0;
   const futures_entry_price = parseFloat(futuresEntryPrice) || 0;
+  const [originalClosePriceTemp, setOriginalClosePriceTemp] = useState(null);
+  const [hedgeClosePriceTemp, setHedgeClosePriceTemp] = useState(null);
 
   const generateTrend = () => {
     const newTrends = generateNewTrend();
@@ -28,11 +27,11 @@ const TrendsChart = ({ trend, quantity, hedgingRatio, type, marginRate, spotEntr
     setSeriesData(savedTrends[trend]);
   }, [trend]);
 
-  const startDate = new Date()
+  const startDate = new Date();
 
   // Adjust series data and calculate payouts
   const adjustedSeriesData = seriesData.map((dataPoint, index) => {
-    const timestamp = new Date(startDate.getTime() + index * 24 * 60 * 60 * 1000).toISOString()
+    const timestamp = new Date(startDate.getTime() + index * 24 * 60 * 60 * 1000).toISOString();
     const [open, high, low, close] = dataPoint.y.map((value) =>
       (value * spot_entry_price / 100).toFixed(2)
     );
@@ -80,10 +79,12 @@ const TrendsChart = ({ trend, quantity, hedgingRatio, type, marginRate, spotEntr
           const dataPointIndex = config.dataPointIndex;
           if (dataPointIndex !== -1) {
             const closePrice = parseFloat(adjustedSeriesData[dataPointIndex].y[3]);
-            if (!originalClosePrice) {
-              setOriginalClosePrice(closePrice);
+            if (!isClosingHedge) {
+              setOriginalClosePriceTemp(closePrice);
+              setIsClosingHedge(true);
             } else {
-              setHedgeClosePrice(closePrice);
+              setHedgeClosePriceTemp(closePrice);
+              setIsClosingHedge(false);
             }
           }
         }
@@ -140,12 +141,35 @@ const TrendsChart = ({ trend, quantity, hedgingRatio, type, marginRate, spotEntr
     },
   };
 
+  useEffect(() => {
+    if (originalClosePriceTemp !== null && hedgeClosePriceTemp !== null) {
+      const payout = type === 'spot' 
+        ? calculatePayoutShort(quantity, spot_entry_price, originalClosePriceTemp, hedgingRatio, marginRate, twoWeeksVolume).hedgedPayout 
+        : calculatePayoutFuture(
+            quantity,
+            spot_entry_price,
+            futures_entry_price,
+            hedgingRatio,
+            ((hedgeClosePriceTemp - spot_entry_price) / spot_entry_price) * 100,
+            twoWeeksVolume
+          ).hedgedPayout;
+  
+      setAdjustedPayout(payout.toFixed(2));
+  
+      setOriginalClosePrice(originalClosePriceTemp);
+      setHedgeClosePrice(hedgeClosePriceTemp);
+    }
+  }, [originalClosePriceTemp, hedgeClosePriceTemp, quantity, spot_entry_price, futures_entry_price, hedgingRatio, marginRate, twoWeeksVolume, type, setAdjustedPayout, setOriginalClosePrice, setHedgeClosePrice]);
+
   return (
     <div id="chart">
       <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
         <button onClick={generateTrend} className="reload-button">
           <FaRedo />
         </button>
+      </div>
+      <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
+        <p>{isClosingHedge ? "Click to set Hedge Close Price" : "Click to set Long Close Price"}</p>
       </div>
       <Chart options={options} series={[{ data: adjustedSeriesData }]} type="candlestick" height={350} />
     </div>
@@ -162,6 +186,7 @@ TrendsChart.propTypes = {
   spotEntryPrice: PropTypes.number.isRequired,
   futuresEntryPrice: PropTypes.number,
   generateNewTrend: PropTypes.func.isRequired,
+  setAdjustedPayout: PropTypes.func.isRequired,
 };
 
 export default TrendsChart;

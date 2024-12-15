@@ -25,6 +25,9 @@ const HedgingScenarios = () => {
     const [twoWeeksVolume, setTwoWeeksVolume] = useState(0);
     const [riskAversion, setRiskAversion] = useState('medium');
     const [activeScenario, setActiveScenario] = useState('up');
+    const [adjustedPayout, setAdjustedPayout] = useState(null);
+    const [originalClosePrice, setOriginalClosePrice] = useState(null);
+    const [hedgeClosePrice, setHedgeClosePrice] = useState(null);
 
     const riskAversionOptions = [
         { value: 'low', label: 'Low' },
@@ -269,16 +272,28 @@ const HedgingScenarios = () => {
                             </div>
                             <h3>Stock Trend Simualtion</h3>
                             <TrendsChart 
-                                className="trends-chart" 
-                                symbol={symbol.value}
-                                trend={trend} 
-                                quantity={quantity} 
-                                hedgingRatio={hedgingRatio} 
-                                type={'spot'} 
-                                marginRate={marginRate} 
-                                spotEntryPrice={spotEntryPrice}
-                                generateNewTrend={generateNewTrend}
+                            className="trends-chart" 
+                            symbol={symbol.value}
+                            trend={trend} 
+                            quantity={quantity} 
+                            hedgingRatio={hedgingRatio} 
+                            type={'spot'} 
+                            marginRate={marginRate} 
+                            spotEntryPrice={spotEntryPrice}
+                            futuresEntryPrice={futuresEntryPrice}
+                            generateNewTrend={generateNewTrend}
+                            setAdjustedPayout={setAdjustedPayout}
+                            setOriginalClosePrice={setOriginalClosePrice} // Pass state updater
+                            setHedgeClosePrice={setHedgeClosePrice} // Pass state updater
                             />
+                            {adjustedPayout && (
+                            <div>
+                                <h3>Optimal Payout Calculation</h3>
+                                <p>Long Close Price: ${originalClosePrice?.toFixed(2)}</p>
+                                <p>Hedge Close Price: ${hedgeClosePrice?.toFixed(2)}</p>
+                                <h4>Payout: ${adjustedPayout}</h4>
+                            </div>
+                            )}
                         </div>
                     )}
                 </>
@@ -366,16 +381,28 @@ const HedgingScenarios = () => {
                                 </div>
                             </div>
                             <TrendsChart 
-                                className="trends-chart" 
-                                symbol={symbol.value}
-                                trend={trend} 
-                                quantity={quantity} 
-                                hedgingRatio={hedgingRatio} 
-                                type={'future'} 
-                                spotEntryPrice={spotEntryPrice}
-                                futuresEntryPrice={futuresEntryPrice}
-                                generateNewTrend={generateNewTrend}
+                            className="trends-chart" 
+                            symbol={symbol.value}
+                            trend={trend} 
+                            quantity={quantity} 
+                            hedgingRatio={hedgingRatio} 
+                            type={'future'} 
+                            marginRate={marginRate} 
+                            spotEntryPrice={spotEntryPrice}
+                            futuresEntryPrice={futuresEntryPrice}
+                            generateNewTrend={generateNewTrend}
+                            setAdjustedPayout={setAdjustedPayout}
+                            setOriginalClosePrice={setOriginalClosePrice} // Pass state updater
+                            setHedgeClosePrice={setHedgeClosePrice} // Pass state updater
                             />
+                            {adjustedPayout && (
+                            <div>
+                                <h3>Optimal Payout Calculation</h3>
+                                <p>Long Close Price: ${originalClosePrice?.toFixed(2)}</p>
+                                <p>Hedge Close Price: ${hedgeClosePrice?.toFixed(2)}</p>
+                                <h4>Payout: ${adjustedPayout}</h4>
+                            </div>
+                            )}
                         </div>
                     )}
                 </>
