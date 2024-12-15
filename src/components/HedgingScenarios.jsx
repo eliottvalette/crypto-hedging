@@ -4,7 +4,7 @@ import { calculatePayoutFuture, calculatePayoutShort } from '../utils/hedging';
 import { getSpotPrice, getFuturesPrice, getAvailableSymbols } from '../utils/data';
 import TrendsChart from './TrendsChart';
 import { customStyles } from '../utils/config';
-import { savedTrends, generateNewTrend } from '../utils/trends';
+import { generateNewTrend } from '../utils/trends';
 
 const HedgingScenarios = () => {
     const [hedgeType, setHedgeType] = useState('spot');
@@ -24,6 +24,7 @@ const HedgingScenarios = () => {
     const [totalInvested, setTotalInvested] = useState(0);
     const [twoWeeksVolume, setTwoWeeksVolume] = useState(0);
     const [riskAversion, setRiskAversion] = useState('medium');
+    const [activeScenario, setActiveScenario] = useState('up');
 
     const riskAversionOptions = [
         { value: 'low', label: 'Low' },
@@ -250,22 +251,23 @@ const HedgingScenarios = () => {
                             <h2>Results for Short Position</h2>
                             <p>Optimal Leverage: {optimalLeverage}</p>
                             <div className="results-types-container">
-                                <div className="results-up" onClick={() => setTrend('upTrend')}>
+                                <div className={`results-up ${activeScenario === 'up' ? 'active' : ''}`} onClick={() => { setTrend('upTrend'); setActiveScenario('up'); }}>
                                     <h3>Up Scenario (+10%)</h3>
                                     <p className="results-without">No Hedge: ${spotPayouts.up}</p>
                                     <p>With Hedge: ${hedgedPayouts.up}</p>
                                 </div>
-                                <div className="results-down" onClick={() => setTrend('downTrend')}>
+                                <div className={`results-down ${activeScenario === 'down' ? 'active' : ''}`} onClick={() => { setTrend('downTrend'); setActiveScenario('down'); }}>
                                     <h3>Down Scenario (-10%)</h3>
                                     <p className="results-without">No Hedge: ${spotPayouts.down}</p>
                                     <p>With Hedge: ${hedgedPayouts.down}</p>
                                 </div>
-                                <div className="results-neutral" onClick={() => setTrend('sideTrend')}>
+                                <div className={`results-neutral ${activeScenario === 'neutral' ? 'active' : ''}`} onClick={() => { setTrend('sideTrend'); setActiveScenario('neutral'); }}>
                                     <h3>Neutral Scenario (0%)</h3>
                                     <p className="results-without">No Hedge: ${spotPayouts.neutral}</p>
                                     <p>With Hedge: ${hedgedPayouts.neutral}</p>
                                 </div>
                             </div>
+                            <h3>Stock Trend Simualtion</h3>
                             <TrendsChart 
                                 className="trends-chart" 
                                 symbol={symbol.value}
@@ -277,6 +279,11 @@ const HedgingScenarios = () => {
                                 spotEntryPrice={spotEntryPrice}
                                 generateNewTrend={generateNewTrend}
                             />
+                            <h3>Optimal Results</h3>
+                            <div className="optimal-results">
+                                <p>Optimal Leverage: {optimalLeverage}</p>
+                                <p>Total Invested: ${totalInvested}</p>
+                            </div>
                         </div>
                     )}
                 </>
@@ -347,17 +354,17 @@ const HedgingScenarios = () => {
                         <div className="results-container">
                             <h2>Futures Hedging Results</h2>
                             <div className="results-types-container">
-                                <div className="results-up" onClick={() => setTrend('upTrend')}>
+                                <div className={`results-up ${activeScenario === 'up' ? 'active' : ''}`} onClick={() => { setTrend('upTrend'); setActiveScenario('up'); }}>
                                     <h3>Up Scenario (+10%)</h3>
                                     <p className="results-without">No Hedge: ${spotPayouts.up}</p>
                                     <p>With Hedge: ${hedgedPayouts.up}</p>
                                 </div>
-                                <div className="results-down" onClick={() => setTrend('downTrend')}>
+                                <div className={`results-down ${activeScenario === 'down' ? 'active' : ''}`} onClick={() => { setTrend('downTrend'); setActiveScenario('down'); }}>
                                     <h3>Down Scenario (-10%)</h3>
                                     <p className="results-without">No Hedge: ${spotPayouts.down}</p>
                                     <p>With Hedge: ${hedgedPayouts.down}</p>
                                 </div>
-                                <div className="results-neutral" onClick={() => setTrend('sideTrend')}>
+                                <div className={`results-neutral ${activeScenario === 'neutral' ? 'active' : ''}`} onClick={() => { setTrend('sideTrend'); setActiveScenario('neutral'); }}>
                                     <h3>Neutral Scenario (0%)</h3>
                                     <p className="results-without">No Hedge: ${spotPayouts.neutral}</p>
                                     <p>With Hedge: ${hedgedPayouts.neutral}</p>
@@ -374,6 +381,11 @@ const HedgingScenarios = () => {
                                 futuresEntryPrice={futuresEntryPrice}
                                 generateNewTrend={generateNewTrend}
                             />
+                            <h3>Optimal Results</h3>
+                            <div className="optimal-results">
+                                <p>Optimal Leverage: {optimalLeverage}</p>
+                                <p>Total Invested: ${totalInvested}</p>
+                            </div>
                         </div>
                     )}
                 </>
