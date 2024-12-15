@@ -1,4 +1,8 @@
 // trends.js
+import goodUpwardTrend from '../temp/good_upward_trend.json';
+import goodDownwardTrend from '../temp/good_downward_trend.json';
+import goodSideTrend from '../temp/good_side_trend.json';
+
 const generateStockPrices = (startPrice, drift, volatility, count) => {
   const data = [];
   let previousClose = startPrice;
@@ -24,9 +28,19 @@ const generateStockPrices = (startPrice, drift, volatility, count) => {
   return data;
 };
 
+const generateNewTrend = () => {
+  const newTrends = {
+    upTrend: generateStockPrices(100, 0.002, 0.1, 150),
+    downTrend: generateStockPrices(100, -0.002, 0.1, 150),
+    sideTrend: generateStockPrices(100, 0.0, 0.08, 150)
+  };
+  return newTrends;
+};
 
-const upTrend = generateStockPrices(100, 0.002, 0.02, 100); // Upward trend
-const downTrend = generateStockPrices(100, -0.002, 0.02, 100); // Downward trend
-const sideTrend = generateStockPrices(100, 0, 0.02, 100); // Sideways trend
+const savedTrends = {
+  upTrend: goodUpwardTrend,
+  downTrend: goodDownwardTrend,
+  sideTrend: goodSideTrend
+};
 
-export default { upTrend, downTrend, sideTrend };
+export { savedTrends, generateStockPrices, generateNewTrend };

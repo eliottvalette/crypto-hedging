@@ -1,17 +1,22 @@
 import PropTypes from 'prop-types';
 import Chart from 'react-apexcharts';
-import trends from '../utils/trends';
+import { savedTrends, generateNewTrend } from '../utils/trends';
 import { calculatePayoutFuture, calculatePayoutShort } from '../utils/hedging';
 import { useState } from 'react';
 
 const TrendsChart = ({ trend, quantity, hedgingRatio, type, marginRate, spotEntryPrice, futuresEntryPrice }) => {
   const [twoWeeksVolume, setTwoWeeksVolume] = useState(0);
-  
+  const [seriesData, setSeriesData] = useState(savedTrends[trend]);
+
   const spot_entry_price = parseFloat(spotEntryPrice)|| 0;
   const futures_entry_price = parseFloat(futuresEntryPrice)|| 0;
-  
+
+  const generateTrend = () => {
+    savedTrends = generateNewTrend();
+  };
+
   // Adjust series data and calculate payouts
-  const adjustedSeriesData = trends[trend].map((dataPoint) => {
+  const adjustedSeriesData = seriesData.map((dataPoint) => {
     const [open, high, low, close] = dataPoint.y.map((value) =>
       (value * spot_entry_price / 100).toFixed(2)
     );
@@ -94,6 +99,7 @@ const TrendsChart = ({ trend, quantity, hedgingRatio, type, marginRate, spotEntr
 
   return (
     <div id="chart">
+      <button onClick={generateTrend}>Generate New Trend</button>
       <Chart options={options} series={[{ data: adjustedSeriesData }]} type="candlestick" height={350} />
     </div>
   );
