@@ -293,7 +293,7 @@ const HedgingScenarios = () => {
                             setBestPayout= {setBestPayout}
                             />
                             {adjustedPayout && (
-                            <div>
+                            <div className="adjusted-payout">
                                 <h3>Optimal Payout Calculation</h3>
                                 <p>Long Close Price: ${formatNumber(originalClosePrice)}</p>
                                 <p>Hedge Close Price: ${formatNumber(hedgeClosePrice)}</p>
@@ -372,40 +372,42 @@ const HedgingScenarios = () => {
                         <div className="results-container">
                             <h2>Futures Hedging Results</h2>
                             <div className="results-types-container">
-                                <div className={`results-up ${activeScenario === 'up' ? 'active' : ''}`} onClick={() => { setTrend('upTrend'); setActiveScenario('up'); }}>
-                                    <h3>Up Scenario (+10%)</h3>
-                                    <p className="results-without">No Hedge: ${formatNumber(spotPayouts.up)}</p>
-                                    <p>With Hedge: ${formatNumber(hedgedPayouts.up)}</p>
-                                </div>
-                                <div className={`results-down ${activeScenario === 'down' ? 'active' : ''}`} onClick={() => { setTrend('downTrend'); setActiveScenario('down'); }}>
-                                    <h3>Down Scenario (-10%)</h3>
-                                    <p className="results-without">No Hedge: ${formatNumber(spotPayouts.down)}</p>
-                                    <p>With Hedge: ${formatNumber(hedgedPayouts.down)}</p>
-                                </div>
-                                <div className={`results-neutral ${activeScenario === 'neutral' ? 'active' : ''}`} onClick={() => { setTrend('sideTrend'); setActiveScenario('neutral'); }}>
-                                    <h3>Neutral Scenario (0%)</h3>
-                                    <p className="results-without">No Hedge: ${formatNumber(spotPayouts.neutral)}</p>
-                                    <p>With Hedge: ${formatNumber(hedgedPayouts.neutral)}</p>
-                                </div>
+                                <>
+                                    <div className={`results-up ${activeScenario === 'up' ? 'active' : ''}`} onClick={() => { setTrend('upTrend'); setActiveScenario('up'); }}>
+                                        <h3>Up Scenario (+10%)</h3>
+                                        <p className="results-without">No Hedge: ${formatNumber(spotPayouts.up)}</p>
+                                        <p>With Hedge: ${formatNumber(hedgedPayouts.up)}</p>
+                                    </div>
+                                    <div className={`results-down ${activeScenario === 'down' ? 'active' : ''}`} onClick={() => { setTrend('downTrend'); setActiveScenario('down'); }}>
+                                        <h3>Down Scenario (-10%)</h3>
+                                        <p className="results-without">No Hedge: ${formatNumber(spotPayouts.down)}</p>
+                                        <p>With Hedge: ${formatNumber(hedgedPayouts.down)}</p>
+                                    </div>
+                                    <div className={`results-neutral ${activeScenario === 'neutral' ? 'active' : ''}`} onClick={() => { setTrend('sideTrend'); setActiveScenario('neutral'); }}>
+                                        <h3>Neutral Scenario (0%)</h3>
+                                        <p className="results-without">No Hedge: ${formatNumber(spotPayouts.neutral)}</p>
+                                        <p>With Hedge: ${formatNumber(hedgedPayouts.neutral)}</p>
+                                    </div>
+                                </>
                             </div>
                             <TrendsChart 
-                            className="trends-chart" 
-                            symbol={symbol.value}
-                            trend={trend} 
-                            quantity={quantity} 
-                            hedgingRatio={hedgingRatio} 
-                            type={'future'} 
-                            marginRate={marginRate} 
-                            spotEntryPrice={spotEntryPrice}
-                            futuresEntryPrice={futuresEntryPrice}
-                            generateNewTrend={generateNewTrend}
-                            setAdjustedPayout={setAdjustedPayout}
-                            setOriginalClosePrice={setOriginalClosePrice}
-                            setHedgeClosePrice={setHedgeClosePrice}
-                            setBestPayout= {setBestPayout}
+                                className="trends-chart" 
+                                symbol={symbol.value}
+                                trend={trend} 
+                                quantity={quantity} 
+                                hedgingRatio={hedgingRatio} 
+                                type={'future'} 
+                                marginRate={marginRate} 
+                                spotEntryPrice={spotEntryPrice}
+                                futuresEntryPrice={futuresEntryPrice}
+                                generateNewTrend={generateNewTrend}
+                                setAdjustedPayout={setAdjustedPayout}
+                                setOriginalClosePrice={setOriginalClosePrice}
+                                setHedgeClosePrice={setHedgeClosePrice}
+                                setBestPayout= {setBestPayout}
                             />
                             {adjustedPayout && (
-                            <div>
+                            <div className="adjusted-payout">
                                 <h3>Optimal Payout Calculation</h3>
                                 <p>Long Close Price: ${formatNumber(originalClosePrice)}</p>
                                 <p>Close Future Position: ${formatNumber(hedgeClosePrice)}</p>

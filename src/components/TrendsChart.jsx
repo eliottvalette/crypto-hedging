@@ -186,7 +186,7 @@ const TrendsChart = ({ trend, quantity, hedgingRatio, type, marginRate, spotEntr
           <FaRedo />
         </button>
       </div>
-      <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
+      <div className="close-price-message">
         <p>{isClosingHedge ? "Click to set Hedge Close Price" : "Click to set Long Close Price"}</p>
       </div>
       <Chart options={options} series={[{ data: adjustedSeriesData }]} type="candlestick" height={350} />
