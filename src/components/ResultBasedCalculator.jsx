@@ -3,10 +3,12 @@ import Select from 'react-select';
 import { calculateShortHedgeParameters } from '../utils/hedging';
 import { getSpotPrice, getAvailableSymbols } from '../utils/data';
 import { customStyles } from '../utils/config';
+import { use } from 'react';
 
 const ResultBasedShortHedging = () => {
     // Store input values as strings for maximum control
-    const [targetReturn, setTargetReturn] = useState('10');
+    const [targetReturn, setTargetReturn] = useState(10);
+    const [targetReturnText, setTargetReturnText] = useState('+10%');
     const [desiredPayout, setDesiredPayout] = useState('1000');
     const [availableMargin, setAvailableMargin] = useState('2000');
     const [riskAversion, setRiskAversion] = useState('medium');
@@ -42,6 +44,20 @@ const ResultBasedShortHedging = () => {
         }
         fetchSymbols();
     }, []);
+
+    const formatTargetReturn = (value) => {
+        // tranform ±10% to 10 or -10
+        const sign = value[0] === '-' ? -1 : 1;
+        return sign * parseFloat(value.slice(1));
+    };
+
+    useEffect(() => {
+        setTargetReturn(formatTargetReturn(targetReturnText));
+    }, [targetReturnText]);
+
+    console.log('targetReturnText', targetReturnText)
+    console.log('targetReturn', targetReturn)
+
 
     // Fetch the spot price whenever the symbol changes
     useEffect(() => {
@@ -128,12 +144,11 @@ const ResultBasedShortHedging = () => {
             setError(`Calculation failed: ${err.message}`);
         }
     };
-
+    
     const formatNumber = (number) => {
         if (number < 0.01 && number > 0) return number.toExponential(2); // Use scientific notation for small values
         return parseFloat(number).toFixed(2); // Round to 2 decimal places for other cases
     };
-    
 
     return (
         <div className="calculator-container">
@@ -150,13 +165,12 @@ const ResultBasedShortHedging = () => {
             />
 
             {/* Target Exit Input */}
-            <label>What’s your target exit? (%)</label>
+            <label>What's your target exit? (%)</label>
             <input
-                type="number"
-                step="any"
+                type="text" 
                 placeholder="+10% or -5%"
-                value={targetReturn}
-                onChange={(e) => setTargetReturn(e.target.value)}
+                value={targetReturnText}
+                onChange={(e) => setTargetReturnText(e.target.value)}
             />
 
             {/* Desired Payout */}
@@ -195,8 +209,8 @@ const ResultBasedShortHedging = () => {
 
             {/* Display Results */}
             {calculatedParams && (
-            <div className="results-container">
-                <h2>Calculated Hedge Parameters</h2>
+                <div className="results-container">
+                    <h2>Calculated Hedge Parameters</h2>
                 <p>
                     Buy: {formatNumber(calculatedParams.quantity)} {symbol.value} spot at 
                     ${formatNumber(spotEntryPrice)}.
@@ -236,9 +250,8 @@ const ResultBasedShortHedging = () => {
                     Open short with ${formatNumber(calculatedSideTrendParams.marginRequired)} at 
                     {formatNumber(calculatedSideTrendParams.leverage)}x leverage.
                 </p>
-            </div>
-        )}
-
+                </div>
+            )}
 
             {/* Error Message */}
             {error && <div className="error-message">⚠️ {error}</div>}
