@@ -277,29 +277,29 @@ const HedgingScenarios = () => {
                             </div>
                             <h3>Stock Trend Simualtion</h3>
                             <TrendsChart 
-                            className="trends-chart" 
-                            symbol={symbol.value}
-                            trend={trend} 
-                            quantity={quantity} 
-                            hedgingRatio={hedgingRatio} 
-                            type={'spot'} 
-                            marginRate={marginRate} 
-                            spotEntryPrice={spotEntryPrice}
-                            futuresEntryPrice={futuresEntryPrice}
-                            generateNewTrend={generateNewTrend}
-                            setAdjustedPayout={setAdjustedPayout}
-                            setOriginalClosePrice={setOriginalClosePrice}
-                            setHedgeClosePrice={setHedgeClosePrice}
-                            setBestPayout= {setBestPayout}
+                                className="trends-chart" 
+                                symbol={symbol.value}
+                                trend={trend} 
+                                quantity={quantity} 
+                                hedgingRatio={hedgingRatio} 
+                                type={'spot'} 
+                                marginRate={marginRate} 
+                                spotEntryPrice={spotEntryPrice}
+                                futuresEntryPrice={futuresEntryPrice}
+                                generateNewTrend={generateNewTrend}
+                                setAdjustedPayout={setAdjustedPayout}
+                                setOriginalClosePrice={setOriginalClosePrice}
+                                setHedgeClosePrice={setHedgeClosePrice}
+                                setBestPayout= {setBestPayout}
                             />
                             {adjustedPayout && (
                             <div className="adjusted-payout">
-                                <h3>Optimal Payout Calculation</h3>
+                                <h3>Adjusted Payout Calculation</h3>
                                 <p>Long Close Price: ${formatNumber(originalClosePrice)}</p>
                                 <p>Hedge Close Price: ${formatNumber(hedgeClosePrice)}</p>
-                                <h4>Payout: ${formatNumber(adjustedPayout)}</h4>
-                                <h4>Best Spot Payout: ${formatNumber(bestPayout.bestSpotPayout)}</h4>
-                                <h4>Best Hedged Payout: ${formatNumber(bestPayout.bestHedgedPayout)}</h4>
+                                <h4>If you had closed those positions, your final payout would have been: <br/>${formatNumber(adjustedPayout)}</h4>
+                                <p>Best Spot Payout: ${formatNumber(bestPayout.bestSpotPayout)}</p>
+                                <p>Best Hedged Payout: ${formatNumber(bestPayout.bestHedgedPayout)}</p>
                             </div>
                             )}
                         </div>
@@ -408,12 +408,12 @@ const HedgingScenarios = () => {
                             />
                             {adjustedPayout && (
                             <div className="adjusted-payout">
-                                <h3>Optimal Payout Calculation</h3>
+                                <h3>Adjusted Payout Calculation</h3>
                                 <p>Long Close Price: ${formatNumber(originalClosePrice)}</p>
                                 <p>Close Future Position: ${formatNumber(hedgeClosePrice)}</p>
-                                <h4>Payout: ${formatNumber(adjustedPayout)}</h4>
-                                <h4>Best Spot Payout: ${formatNumber(bestPayout.bestSpotPayout)}</h4>
-                                <h4>Best Hedged Payout: ${formatNumber(bestPayout.bestHedgedPayout)}</h4>
+                                <h4>If you had closed those positions, your final payout would have been: <br/>${formatNumber(adjustedPayout)}</h4>
+                                <p>Best Spot Payout: ${formatNumber(bestPayout.bestSpotPayout)}</p>
+                                <p>Best Hedged Payout: ${formatNumber(bestPayout.bestHedgedPayout)}</p>
                             </div>
                             )}
                         </div>

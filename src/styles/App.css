@@ -369,8 +369,14 @@ main {
   text-align: center;
 }
 
-.adjusted-payout h4 {
+.adjusted-payout h3 {
   font-size: 1.2rem;
+  color: var(--color-teal);
+  margin-bottom: 0.5rem;
+}
+
+.adjusted-payout h4 {
+  font-size: 1rem;
   color: var(--color-teal);
   margin-bottom: 0.5rem;
 }
@@ -465,7 +471,7 @@ main {
   border: none;
   border-radius: 8px;
   background: var(--color-light-green);
-  color: var(--color-dark-teal);
+  color: var (--color-dark-teal);
   font-size: 1rem;
   font-weight: bold;
   cursor: pointer;
@@ -504,6 +510,17 @@ main {
   color: var(--color-light-green);
 }
 
+.chart-tools {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  color: var(--color-light-gray);
+  font-size: 1rem;
+}
+
 .reload-button {
   background: transparent;
   border: none;
@@ -513,22 +530,10 @@ main {
   transition: transform 0.3s ease, color 0.3s ease;
   display: flex;
   padding: 0.5rem;
-  border-radius: 50%;
-  margin-left: auto;
 }
 
 .reload-button:hover {
   color: var(--color-teal);
-}
-
-.close-price-message {
-  text-align: center;
-  margin-bottom: 1rem;
-  padding: 0.5rem 1rem;
-  border-radius: 8px;
-  color: var(--color-light-gray);
-  font-size: 1rem;
-  font-weight: bold;
 }
 
 /* Error Message */
@@ -539,6 +544,27 @@ main {
   margin-top: 1rem;
   font-weight: bold;
   text-align: center;
+}
+
+.position-buttons button {
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  border: 2px solid var(--color-light-green);
+  border-radius: 8px;
+  background: var(--color-dark-green);
+  color: var(--color-white);
+  cursor: pointer;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.position-buttons button.active {
+  background: var(--color-light-green);
+  color: var(--color-dark-teal);
+}
+
+.position-buttons button:not(.active):hover {
+  background: var(--color-teal);
+  color: var(--color-dark-teal);
 }
 
 /* Media Queries for Responsiveness */

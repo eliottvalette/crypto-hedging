@@ -14,6 +14,7 @@ const TrendsChart = ({ trend, quantity, hedgingRatio, type, marginRate, spotEntr
   const futures_entry_price = parseFloat(futuresEntryPrice) || 0;
   const [originalClosePriceTemp, setOriginalClosePriceTemp] = useState(null);
   const [hedgeClosePriceTemp, setHedgeClosePriceTemp] = useState(null);
+  const [activePosition, setActivePosition] = useState('long'); // New state for active position
 
   const formatNumber = (number) => {
     return number.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -101,10 +102,8 @@ const TrendsChart = ({ trend, quantity, hedgingRatio, type, marginRate, spotEntr
             const closePrice = parseFloat(adjustedSeriesData[dataPointIndex].y[3]);
             if (!isClosingHedge) {
               setOriginalClosePriceTemp(closePrice);
-              setIsClosingHedge(true);
             } else {
               setHedgeClosePriceTemp(closePrice);
-              setIsClosingHedge(false);
             }
           }
         }
@@ -177,17 +176,32 @@ const TrendsChart = ({ trend, quantity, hedgingRatio, type, marginRate, spotEntr
       setOriginalClosePrice(originalClosePriceTemp);
       setHedgeClosePrice(hedgeClosePriceTemp);
     }
-  }, [type, setAdjustedPayout, setOriginalClosePrice, setHedgeClosePrice, originalClosePriceTemp, hedgeClosePriceTemp]);
+  }, [type, setAdjustedPayout, originalClosePriceTemp, hedgeClosePriceTemp]);
+
+  const handlePositionToggle = (position) => {
+    setActivePosition(position);
+  };
 
   return (
     <div id="chart">
-      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
+      <div className="chart-tools">
+        <div className="position-buttons">
+          <button 
+            onClick={() => {setIsClosingHedge(false), handlePositionToggle('long')}} 
+            className={activePosition === 'long' ? 'active' : ''}
+          >
+            Long Position
+          </button>
+          <button 
+            onClick={() => {setIsClosingHedge(true), handlePositionToggle('hedge')}} 
+            className={activePosition === 'hedge' ? 'active' : ''}
+          >
+            Hedge Position
+          </button>
+        </div>
         <button onClick={generateTrend} className="reload-button">
           <FaRedo />
         </button>
-      </div>
-      <div className="close-price-message">
-        <p>{isClosingHedge ? "Click to set Hedge Close Price" : "Click to set Long Close Price"}</p>
       </div>
       <Chart options={options} series={[{ data: adjustedSeriesData }]} type="candlestick" height={350} />
     </div>
