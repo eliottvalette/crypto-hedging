@@ -9,6 +9,7 @@
   --color-dark-teal-transparent: rgba(7, 39, 35, 0.9);
   --color-dark-teal-semi-transparent: rgba(7, 39, 35, 0.7);
   --color-red: #ff4d4d;
+  --color-dark-red: #cc0000aa;
 }
 
 /* General Reset and Base Styling */
@@ -558,25 +559,45 @@ main {
   margin-top: 1rem;
 }
 
-.position-buttons button, .reload-button-container button{
+.hedge-button, .long-button, .reload-button{
   padding: 0.5rem 1rem;
   font-size: 1rem;
-  border: 2px solid var(--color-light-green);
   border-radius: 8px;
-  background: var(--color-dark-green);
   color: var(--color-white);
   cursor: pointer;
   transition: background 0.3s ease, color 0.3s ease;
 }
 
-.position-buttons button.active {
+.long-button {
+  background: var(--color-dark-green);
+  border: 2px solid var(--color-light-green);
+}
+
+.hedge-button {
+  background: var(--color-dark-red);
+  border: 2px solid var(--color-red);
+}
+
+.long-button.active, .long-button:hover, .reload-button:hover {
   background: var(--color-light-green);
+  color: var(--color-dark-teal);
+  box-shadow: 0 2px 6px rgba(255, 255, 255, 0.4);
+}
+
+.hedge-button.active, .hedge-button:hover {
+  background: var(--color-red);
+  color: var(--color-white);
+  box-shadow: 0 2px 6px rgba(255, 255, 255, 0.4);
+}
+
+.long-button:not(.active):hover, .reload-button:not(.active):hover {
+  background: var(--color-teal);
   color: var(--color-dark-teal);
 }
 
-.position-buttons button:not(.active):hover {
-  background: var(--color-teal);
-  color: var(--color-dark-teal);
+.hedge-button:not(.active):hover {
+  background: var(--color-dark-red);
+  color: var(--color-white);
 }
 
 /* Media Queries for Responsiveness */

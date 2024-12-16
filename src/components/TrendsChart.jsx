@@ -256,13 +256,13 @@ const TrendsChart = ({
         <div className="position-buttons">
           <button
             onClick={() => { setIsClosingHedge(false); setActivePosition('long'); }}
-            className={activePosition === 'long' ? 'active' : ''}
+            className={activePosition === 'long' ? 'long-button active' : 'long-button'}
           >
             Long Position
           </button>
           <button
             onClick={() => { setIsClosingHedge(true); setActivePosition('hedge'); }}
-            className={activePosition === 'hedge' ? 'active' : ''}
+            className={activePosition === 'hedge' ? 'hedge-button active' : 'hedge-button'}
           >
             Hedge Position
           </button>
