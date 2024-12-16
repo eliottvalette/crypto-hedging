@@ -199,10 +199,17 @@ const TrendsChart = ({ trend, quantity, hedgingRatio, type, marginRate, spotEntr
             Hedge Position
           </button>
         </div>
-        <button onClick={generateTrend} className="reload-button">
-          <FaRedo />
-        </button>
+        <div className="reload-button-container">
+          <button onClick={generateTrend} className="reload-button">
+            <FaRedo /> Generate New Trend
+          </button>
+        </div>
+          
+        
       </div>
+      <p className="instructions">
+        Select a position type (Long or Hedge) and click on the chart to set or modify the close price for the selected position.
+      </p>
       <Chart options={options} series={[{ data: adjustedSeriesData }]} type="candlestick" height={350} />
     </div>
   );
