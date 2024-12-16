@@ -174,6 +174,13 @@ const HedgingScenarios = () => {
         setTotalInvested(results.neutral.totalInvested);
     };
 
+    const handleTotalInvestedChange = (e) => {
+        const value = e.target.value.replace(/,/g, ''); // Remove commas
+        if (!isNaN(value)) {
+            setTotalInvested(parseFloat(value) || 0); // Update state with the numeric value
+        }
+    };
+
     return (
         <div className="calculator-container">
             <div className="buttons-container">
@@ -207,24 +214,25 @@ const HedgingScenarios = () => {
                         type="number"
                         placeholder="Quantity (Q)"
                         value={quantity}
-                        onChange={(e) => setQuantity(e.target.value)}
+                        onChange={(e) => setQuantity(e.target.value || 0)}
                         min="0"
                         step="1"
                     />
                     <label>Spot Entry Price ($)</label>
                     <input
-                        type="number"
+                        type="text"
                         placeholder="Spot Entry Price ($)"
-                        value={spotEntryPrice}
-                        onChange={(e) => setSpotEntryPrice(e.target.value)}
+                        value={spotEntryPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        onChange={(e) => setSpotEntryPrice(parseFloat(e.target.value.replace(/,/g, '')) || 0)}
                         min="0"
                         step="0.01"
                     />
                     <label>Total Invested ($)</label>
                     <input
-                        type="number"
-                        value={totalInvested}
-                        readOnly
+                        type="text"
+                        value={totalInvested.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        onChange={handleTotalInvestedChange} 
+                        onBlur={() => setTotalInvested(Number(totalInvested.toFixed(2)))}
                     />
                     <label>Margin Rate: {marginRate}</label>
                     <input
@@ -321,33 +329,38 @@ const HedgingScenarios = () => {
                         type="number"
                         placeholder="Quantity (Q)"
                         value={quantity}
-                        onChange={(e) => setQuantity(e.target.value)}
+                        onChange={(e) => setQuantity(parseFloat(e.target.value) || 0)}
                         min="0"
                         step="1"
                     />
                     <label>Spot Entry Price ($)</label>
                     <input
-                        type="number"
+                        type="text"
                         placeholder="Spot Entry Price ($)"
-                        value={spotEntryPrice}
-                        onChange={(e) => setSpotEntryPrice(e.target.value)}
+                        value={spotEntryPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        onChange={(e) => setSpotEntryPrice(parseFloat(e.target.value.replace(/,/g, '')) || 0)}
                         min="0"
                         step="0.01"
                     />
                     <label>Total Invested ($)</label>
                     <input
-                        type="number"
-                        value={totalInvested}
-                        readOnly
+                        type="text"
+                        value={totalInvested.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        onChange={handleTotalInvestedChange} 
+                        onBlur={() => setTotalInvested(Number(totalInvested.toFixed(2)))}
                     />
                     <label>Futures Entry Price ($)</label>
                     <input
-                        type="number"
+                        type="text"
                         placeholder="Futures Entry Price ($)"
-                        value={futuresEntryPrice}
-                        onChange={(e) => setFuturesEntryPrice(e.target.value)}
-                        min="0"
-                        step="0.01"
+                        value={futuresEntryPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        onChange={(e) => {
+                            const value = e.target.value.replace(/,/g, ''); // Remove commas for parsing
+                            if (!isNaN(value)) {
+                                setFuturesEntryPrice(parseFloat(value) || 0); // Update state
+                            }
+                        }}
+                        onBlur={() => setFuturesEntryPrice(Number(futuresEntryPrice.toFixed(2)))} // Reapply formatting
                     />
                     <label>Hedging Ratio (h): {hedgingRatio}</label>
                     <input
@@ -397,7 +410,7 @@ const HedgingScenarios = () => {
                                 trend={trend} 
                                 quantity={quantity} 
                                 hedgingRatio={hedgingRatio} 
-                                type={'future'} 
+                                type={hedgeType} 
                                 marginRate={marginRate} 
                                 spotEntryPrice={spotEntryPrice}
                                 futuresEntryPrice={futuresEntryPrice}
@@ -405,7 +418,7 @@ const HedgingScenarios = () => {
                                 setAdjustedPayout={setAdjustedPayout}
                                 setOriginalClosePrice={setOriginalClosePrice}
                                 setHedgeClosePrice={setHedgeClosePrice}
-                                setBestPayout= {setBestPayout}
+                                setBestPayout={setBestPayout}
                             />
                             {adjustedPayout && (
                             <div className="adjusted-payout">

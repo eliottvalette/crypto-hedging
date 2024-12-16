@@ -2,11 +2,24 @@ import PropTypes from 'prop-types';
 import Chart from 'react-apexcharts';
 import { savedTrends } from '../utils/trends';
 import { calculatePayoutFuture, calculatePayoutShort, calculateBestPayout } from '../utils/hedging';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { FaRedo } from 'react-icons/fa';
 import 'apexcharts/dist/apexcharts.css';
 
-const TrendsChart = ({ trend, quantity, hedgingRatio, type, marginRate, spotEntryPrice, futuresEntryPrice, generateNewTrend, setAdjustedPayout, setOriginalClosePrice, setHedgeClosePrice, setBestPayout }) => {
+const TrendsChart = ({
+  trend,
+  quantity,
+  hedgingRatio,
+  type,
+  marginRate,
+  spotEntryPrice,
+  futuresEntryPrice,
+  generateNewTrend,
+  setAdjustedPayout,
+  setOriginalClosePrice,
+  setHedgeClosePrice,
+  setBestPayout,
+}) => {
   const [twoWeeksVolume, setTwoWeeksVolume] = useState(0);
   const [seriesData, setSeriesData] = useState(savedTrends[trend]);
   const [isClosingHedge, setIsClosingHedge] = useState(false);
@@ -14,7 +27,11 @@ const TrendsChart = ({ trend, quantity, hedgingRatio, type, marginRate, spotEntr
   const futures_entry_price = parseFloat(futuresEntryPrice) || 0;
   const [originalClosePriceTemp, setOriginalClosePriceTemp] = useState(null);
   const [hedgeClosePriceTemp, setHedgeClosePriceTemp] = useState(null);
-  const [activePosition, setActivePosition] = useState('long'); // New state for active position
+  const [annotations, setAnnotations] = useState({
+    xaxis: [],
+    points: [],
+  });
+  const [activePosition, setActivePosition] = useState('long');
 
   const formatNumber = (number) => {
     return number.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -26,6 +43,12 @@ const TrendsChart = ({ trend, quantity, hedgingRatio, type, marginRate, spotEntr
     savedTrends['downTrend'] = newTrends['downTrend'];
     savedTrends['sideTrend'] = newTrends['sideTrend'];
     setSeriesData(newTrends[trend]);
+
+    // Optionally clear annotations when generating a new trend
+    setAnnotations({
+      xaxis: [],
+      points: [],
+    });
   };
 
   useEffect(() => {
@@ -34,57 +57,56 @@ const TrendsChart = ({ trend, quantity, hedgingRatio, type, marginRate, spotEntr
 
   const startDate = new Date();
 
-  // Adjust series data and calculate payouts
-  const adjustedSeriesData = seriesData.map((dataPoint, index) => {
-    const timestamp = new Date(startDate.getTime() + index * 24 * 60 * 60 * 1000).toISOString();
-    const [open, high, low, close] = dataPoint.y.map((value) =>
-      (value * spot_entry_price / 100).toFixed(2)
-    );
-
-    let spotPayout = 0;
-    let hedgedPayout = 0;
-
-    if (type === 'spot') {
-      ({ spotPayout, hedgedPayout } = calculatePayoutShort(
-        quantity,
-        spot_entry_price,
-        parseFloat(close),
-        hedgingRatio,
-        marginRate,
-        twoWeeksVolume
-      ));
-    } else {
-      ({ spotPayout, hedgedPayout } = calculatePayoutFuture(
-        quantity,
-        spot_entry_price,
-        futures_entry_price,
-        parseFloat(close),
-        parseFloat(close),
-        hedgingRatio,
-        twoWeeksVolume
-      ));
-    }
-
-    return {
-      ...dataPoint,
-      x: timestamp,
-      y: [open, high, low, close],
-      spotPayout: formatNumber(spotPayout),
-      hedgedPayout: formatNumber(hedgedPayout),
-    };
-  });
+  const adjustedSeriesData = useMemo(() => {
+    return seriesData.map((dataPoint, index) => {
+      const timestamp = new Date(startDate.getTime() + index * 24 * 60 * 60 * 1000).toISOString();
+      const [open, high, low, close] = dataPoint.y.map((value) =>
+        (value * spot_entry_price / 100).toFixed(2)
+      );
+      let spotPayout = 0;
+      let hedgedPayout = 0;
+  
+      if (type === 'spot') {
+        ({ spotPayout, hedgedPayout } = calculatePayoutShort(
+          quantity,
+          spot_entry_price,
+          parseFloat(close),
+          hedgingRatio,
+          marginRate,
+          twoWeeksVolume
+        ));
+      } else {
+        ({ spotPayout, hedgedPayout } = calculatePayoutFuture(
+          quantity,
+          spot_entry_price,
+          futures_entry_price,
+          parseFloat(close),
+          parseFloat(close),
+          hedgingRatio,
+          twoWeeksVolume
+        ));
+      }
+  
+      return {
+        ...dataPoint,
+        x: timestamp,
+        y: [open, high, low, close],
+        spotPayout: formatNumber(spotPayout),
+        hedgedPayout: formatNumber(hedgedPayout),
+      };
+    });
+  }, [seriesData, startDate, type, spot_entry_price, futures_entry_price, quantity, hedgingRatio, marginRate, twoWeeksVolume]);
 
   useEffect(() => {
-    console.log("Adjusted series data:", adjustedSeriesData);
     const { bestSpotPayout, bestHedgedPayout } = calculateBestPayout(
-        adjustedSeriesData,
-        type,
-        quantity,
-        spot_entry_price,
-        futures_entry_price,
-        hedgingRatio,
-        marginRate,
-        twoWeeksVolume
+      adjustedSeriesData,
+      type,
+      quantity,
+      spot_entry_price,
+      futures_entry_price,
+      hedgingRatio,
+      marginRate,
+      twoWeeksVolume
     );
     console.log("Best payouts calculated:", { bestSpotPayout, bestHedgedPayout });
     setBestPayout({bestSpotPayout, bestHedgedPayout});
@@ -106,9 +128,10 @@ const TrendsChart = ({ trend, quantity, hedgingRatio, type, marginRate, spotEntr
               setHedgeClosePriceTemp(closePrice);
             }
           }
-        }
+        },
       },
     },
+    annotations: annotations,
     title: {
       text: 'Price Movement',
       align: 'left',
@@ -128,11 +151,11 @@ const TrendsChart = ({ trend, quantity, hedgingRatio, type, marginRate, spotEntr
         },
         colors: {
           upward: '#00B746',
-          downward: '#EF403C'
+          downward: '#EF403C',
         },
         fill: {
-          opacity: 1
-        }
+          opacity: 1,
+        },
       },
     },
     tooltip: {
@@ -162,8 +185,8 @@ const TrendsChart = ({ trend, quantity, hedgingRatio, type, marginRate, spotEntr
 
   useEffect(() => {
     if (originalClosePriceTemp !== null && hedgeClosePriceTemp !== null) {
-      const payout = type === 'spot' 
-        ? calculatePayoutShort(quantity, spot_entry_price, originalClosePriceTemp, hedgingRatio, marginRate, twoWeeksVolume).hedgedPayout 
+      const payout = type === 'spot'
+        ? calculatePayoutShort(quantity, spot_entry_price, originalClosePriceTemp, hedgingRatio, marginRate, twoWeeksVolume).hedgedPayout
         : calculatePayoutFuture(quantity, spot_entry_price, futures_entry_price, originalClosePriceTemp, hedgeClosePriceTemp, hedgingRatio, twoWeeksVolume).hedgedPayout;
 
       const parsedPayout = parseFloat(payout.replace(/,/g, ''));
@@ -176,24 +199,20 @@ const TrendsChart = ({ trend, quantity, hedgingRatio, type, marginRate, spotEntr
       setOriginalClosePrice(originalClosePriceTemp);
       setHedgeClosePrice(hedgeClosePriceTemp);
     }
-  }, [type, setAdjustedPayout, originalClosePriceTemp, hedgeClosePriceTemp]);
-
-  const handlePositionToggle = (position) => {
-    setActivePosition(position);
-  };
+  }, [originalClosePriceTemp, hedgeClosePriceTemp]);
 
   return (
     <div id="chart">
       <div className="chart-tools">
         <div className="position-buttons">
           <button 
-            onClick={() => {setIsClosingHedge(false), handlePositionToggle('long')}} 
+            onClick={() => { setIsClosingHedge(false); setActivePosition('long'); }} 
             className={activePosition === 'long' ? 'active' : ''}
           >
             Long Position
           </button>
           <button 
-            onClick={() => {setIsClosingHedge(true), handlePositionToggle('hedge')}} 
+            onClick={() => { setIsClosingHedge(true); setActivePosition('hedge'); }} 
             className={activePosition === 'hedge' ? 'active' : ''}
           >
             Hedge Position
@@ -204,13 +223,16 @@ const TrendsChart = ({ trend, quantity, hedgingRatio, type, marginRate, spotEntr
             <FaRedo /> Generate New Trend
           </button>
         </div>
-          
-        
       </div>
       <p className="instructions">
         Select a position type (Long or Hedge) and click on the chart to set or modify the close price for the selected position.
       </p>
-      <Chart options={options} series={[{ data: adjustedSeriesData }]} type="candlestick" height={350} />
+      <Chart 
+        options={{ ...options, annotations }} 
+        series={[{ data: adjustedSeriesData }]} 
+        type="candlestick" 
+        height={350} 
+      />
     </div>
   );
 };
