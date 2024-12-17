@@ -300,15 +300,24 @@ const HedgingScenarios = () => {
                                 setHedgeClosePrice={setHedgeClosePrice}
                                 setBestPayout= {setBestPayout}
                             />
-                            {adjustedPayout && (
+                            {adjustedPayout ? (
                             <div className="adjusted-payout">
                                 <h3>Adjusted Payout Calculation</h3>
                                 <p>Long Close Price: ${formatNumber(originalClosePrice)}</p>
                                 <p>Hedge Close Price: ${formatNumber(hedgeClosePrice)}</p>
                                 <h4>If you had closed those positions, your final payout would have been: <br/>${formatNumber(adjustedPayout)}</h4>
+                                <h3>Best Possible payouts</h3>
                                 <p>Best Spot Payout: ${formatNumber(bestPayout.bestSpotPayout)}</p>
                                 <p>Best Hedged Payout: ${formatNumber(bestPayout.bestHedgedPayout)}</p>
                             </div>
+                            ) : (
+                                <div className="adjusted-payout">
+                                    <h3>Adjusted Payout Calculation</h3>
+                                    <h4><i>(Click the chart to set or update the selected position's close price.)</i></h4>
+                                    <h3>Best Possible payouts</h3>
+                                    <p>Best Spot Payout: ${formatNumber(bestPayout.bestSpotPayout)}</p>
+                                    <p>Best Hedged Payout: ${formatNumber(bestPayout.bestHedgedPayout)}</p>
+                                </div>
                             )}
                         </div>
                     )}
@@ -420,12 +429,21 @@ const HedgingScenarios = () => {
                                 setHedgeClosePrice={setHedgeClosePrice}
                                 setBestPayout={setBestPayout}
                             />
-                            {adjustedPayout && (
+                            {adjustedPayout ? (
                             <div className="adjusted-payout">
                                 <h3>Adjusted Payout Calculation</h3>
                                 <p>Long Close Price: ${formatNumber(originalClosePrice)}</p>
                                 <p>Close Future Position: ${formatNumber(hedgeClosePrice)}</p>
                                 <h4>If you had closed those positions, your final payout would have been: <br/>${formatNumber(adjustedPayout)}</h4>
+                                <h3>Best Possible payouts</h3>
+                                <p>Best Spot Payout: ${formatNumber(bestPayout.bestSpotPayout)}</p>
+                                <p>Best Hedged Payout: ${formatNumber(bestPayout.bestHedgedPayout)}</p>
+                            </div>
+                            ) :(
+                            <div className="adjusted-payout">
+                                <h3>Adjusted Payout Calculation</h3>
+                                <h4><i>(Click the chart to set or update the selected position's close price.)</i></h4>
+                                <h3>Best Possible payouts</h3>
                                 <p>Best Spot Payout: ${formatNumber(bestPayout.bestSpotPayout)}</p>
                                 <p>Best Hedged Payout: ${formatNumber(bestPayout.bestHedgedPayout)}</p>
                             </div>

@@ -50,6 +50,8 @@ const TrendsChart = ({
   };
 
   const generateTrend = () => {
+    setAnnotations({ xaxis: [] });
+
     const newTrends = generateNewTrend();
     savedTrends['upTrend'] = newTrends['upTrend'];
     savedTrends['downTrend'] = newTrends['downTrend'];
@@ -236,19 +238,21 @@ const TrendsChart = ({
 
   useEffect(() => {
     if (originalClosePriceTemp !== null && hedgeClosePriceTemp !== null) {
+      console.log('Calculating payouts...', originalClosePriceTemp, hedgeClosePriceTemp);
       const payout = type === 'spot'
         ? calculatePayoutShort(quantity, spot_entry_price, originalClosePriceTemp, hedgingRatio, marginRate, twoWeeksVolume).hedgedPayout
         : calculatePayoutFuture(quantity, spot_entry_price, futures_entry_price, originalClosePriceTemp, hedgeClosePriceTemp, hedgingRatio, twoWeeksVolume).hedgedPayout;
-
+      console.log('Payout:', payout);
       const parsedPayout = parseFloat(payout.replace(/,/g, ''));
       if (!isNaN(parsedPayout)) {
         setAdjustedPayout(parsedPayout);
+        console.log('Adjusted Payout:', parsedPayout);
       }
 
       setOriginalClosePrice(originalClosePriceTemp);
       setHedgeClosePrice(hedgeClosePriceTemp);
     }
-  }, [originalClosePriceTemp, hedgeClosePriceTemp]);
+  }, [originalClosePriceTemp, hedgeClosePriceTemp, type, quantity, spot_entry_price, futures_entry_price, hedgingRatio, marginRate, twoWeeksVolume]);
 
   return (
     <div id="chart">
