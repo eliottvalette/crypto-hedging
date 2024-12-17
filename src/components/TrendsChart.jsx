@@ -252,7 +252,7 @@ const TrendsChart = ({
       setOriginalClosePrice(originalClosePriceTemp);
       setHedgeClosePrice(hedgeClosePriceTemp);
     }
-  }, [originalClosePriceTemp, hedgeClosePriceTemp, type, quantity, spot_entry_price, futures_entry_price, hedgingRatio, marginRate, twoWeeksVolume]);
+  }, [originalClosePriceTemp, hedgeClosePriceTemp]);
 
   return (
     <div id="chart">
