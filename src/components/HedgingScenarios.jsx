@@ -19,9 +19,10 @@ const HedgingScenarios = () => {
     const [hedgedPayouts, setHedgedPayouts] = useState({ up: null, down: null, neutral: null });
     const [optimalLeverage, setOptimalLeverage] = useState(null);
     const [error, setError] = useState('');
-    const [marginRate, setMarginRate] = useState(0.1);
     const [trend, setTrend] = useState('upTrend');
     const [totalInvested, setTotalInvested] = useState(0);
+    const [totalInvestedLong, setTotalInvestedLong] = useState(0);
+    const [totalInvestedShort, setTotalInvestedShort] = useState(0);
     const [twoWeeksVolume, setTwoWeeksVolume] = useState(0);
     const [riskAversion, setRiskAversion] = useState('medium');
     const [activeScenario, setActiveScenario] = useState('up');
@@ -126,21 +127,15 @@ const HedgingScenarios = () => {
     const handleCalculateShort = () => {
         const Q = parseFloat(quantity);
         const P_spot_achat = parseFloat(spotEntryPrice);
-        const margin = parseFloat(marginRate);
         const h = parseFloat(hedgingRatio);
     
-        if (isNaN(Q) || isNaN(P_spot_achat) || isNaN(margin) || isNaN(h)) {
+        if (isNaN(Q) || isNaN(P_spot_achat) || isNaN(h)) {
             setError('Please enter valid numerical values.');
             return;
         }
     
         if (h < 0 || h > 1) {
             setError('Hedging ratio must be between 0 and 1.');
-            return;
-        }
-    
-        if (margin <= 0) {
-            setError('Initial margin must be greater than 0.');
             return;
         }
     
@@ -155,7 +150,7 @@ const HedgingScenarios = () => {
         const results = {};
     
         Object.entries(scenarios).forEach(([scenario, exitPrice]) => {
-            results[scenario] = calculatePayoutShort(Q, P_spot_achat, exitPrice, h, margin, twoWeeksVolume);
+            results[scenario] = calculatePayoutShort(Q, P_spot_achat, exitPrice, h, twoWeeksVolume);
         });
     
         setSpotPayouts({
@@ -171,7 +166,8 @@ const HedgingScenarios = () => {
         });
     
         setOptimalLeverage(results.neutral.optimalLeverage);
-        setTotalInvested(results.neutral.totalInvested);
+        setTotalInvestedLong(results.neutral.totalInvestedLong);
+        setTotalInvestedShort(results.neutral.totalInvestedShort);
     };
 
     const handleTotalInvestedChange = (e) => {
@@ -227,21 +223,12 @@ const HedgingScenarios = () => {
                         min="0"
                         step="0.01"
                     />
-                    <label>Total Invested ($)</label>
+                    <label>Total Invested Long ($)</label>
                     <input
                         type="text"
                         value={totalInvested.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         onChange={handleTotalInvestedChange} 
                         onBlur={() => setTotalInvested(Number(totalInvested.toFixed(2)))}
-                    />
-                    <label>Margin Rate: {marginRate}</label>
-                    <input
-                        type="range"
-                        min="0"
-                        max="1"
-                        step="0.01"
-                        value={marginRate}
-                        onChange={(e) => setMarginRate(e.target.value)}
                     />
                     <label>Hedging Ratio (h): {hedgingRatio}</label>
                     <input
@@ -265,7 +252,8 @@ const HedgingScenarios = () => {
                     {spotPayouts.up !== null && (
                         <div className="results-container">
                             <h2>Results for Short Position</h2>
-                            <p>Optimal Leverage: {formatNumber(optimalLeverage)}</p>
+                            <p>Total Invested Long: ${formatNumber(totalInvestedLong)}</p>
+                            <p>Total Invested Short: ${formatNumber(totalInvestedShort)} at {formatNumber(optimalLeverage)}x Leverage</p>
                             <div className="results-types-container">
                                 <div className={`results-up ${activeScenario === 'up' ? 'active' : ''}`} onClick={() => { setTrend('upTrend'); setActiveScenario('up'); }}>
                                     <h3>Up Scenario (+10%)</h3>
@@ -289,9 +277,8 @@ const HedgingScenarios = () => {
                                 symbol={symbol.value}
                                 trend={trend} 
                                 quantity={quantity} 
-                                hedgingRatio={hedgingRatio} 
+                                hedgingRatio={parseFloat(hedgingRatio)} 
                                 type={'spot'} 
-                                marginRate={marginRate} 
                                 spotEntryPrice={spotEntryPrice}
                                 futuresEntryPrice={futuresEntryPrice}
                                 generateNewTrend={generateNewTrend}
@@ -420,7 +407,6 @@ const HedgingScenarios = () => {
                                 quantity={quantity} 
                                 hedgingRatio={hedgingRatio} 
                                 type={hedgeType} 
-                                marginRate={marginRate} 
                                 spotEntryPrice={spotEntryPrice}
                                 futuresEntryPrice={futuresEntryPrice}
                                 generateNewTrend={generateNewTrend}

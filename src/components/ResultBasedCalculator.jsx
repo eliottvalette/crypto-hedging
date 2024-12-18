@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import Select from 'react-select';
-import { calculateShortHedgeParameters } from '../utils/hedging';
+import { calculateShortHedgeParameters, calculatePayoutShort } from '../utils/hedging';
 import { getSpotPrice, getAvailableSymbols } from '../utils/data';
 import { customStyles } from '../utils/config';
 import { use } from 'react';
@@ -13,9 +13,6 @@ const ResultBasedShortHedging = () => {
     const [availableMargin, setAvailableMargin] = useState('2000');
     const [riskAversion, setRiskAversion] = useState('medium');
     const [calculatedParams, setCalculatedParams] = useState(null);
-    const [calculatedDownTrendParams, setCalculatedDownTrendParams] = useState(null);
-    const [calculatedSideTrendParams, setCalculatedSideTrendParams] = useState(null);
-    const [calculatedUpTrendParams, setCalculatedUpTrendParams] = useState(null);
 
     // Additional states
     const [spotEntryPrice, setSpotEntryPrice] = useState(0);
@@ -23,6 +20,7 @@ const ResultBasedShortHedging = () => {
     const [availableSymbols, setAvailableSymbols] = useState([]);
     const [twoWeeksVolume, setTwoWeeksVolume] = useState(0);
     const [error, setError] = useState('');
+    const [payoutScenarios, setPayoutScenarios] = useState(null);
 
     // Risk aversion dropdown
     const riskAversionOptions = [
@@ -72,10 +70,9 @@ const ResultBasedShortHedging = () => {
         fetchPrices();
     }, [symbol]);
 
-    // Calculate button handler
     const handleCalculateHedge = () => {
         setError(''); // Reset any old errors
-    
+        
         const parsedTargetReturn = parseFloat(targetReturn);
         const parsedDesiredPayout = parseFloat(desiredPayout);
         const parsedAvailableMargin = parseFloat(availableMargin);
@@ -101,44 +98,24 @@ const ResultBasedShortHedging = () => {
                 twoWeeksVolume
             );
     
-            // Calculate for downtrend (e.g., -10%)
-            const downTrendPrice = spotEntryPrice * 0.9;
-            const downTrendParams = calculateShortHedgeParameters(
-                parsedTargetReturn,
-                parsedDesiredPayout,
-                parsedAvailableMargin,
-                riskAversion,
-                downTrendPrice,
-                twoWeeksVolume
-            );
-    
-            // Calculate for uptrend (e.g., +10%)
-            const upTrendPrice = spotEntryPrice * 1.1;
-            const upTrendParams = calculateShortHedgeParameters(
-                parsedTargetReturn,
-                parsedDesiredPayout,
-                parsedAvailableMargin,
-                riskAversion,
-                upTrendPrice,
-                twoWeeksVolume
-            );
-    
-            // Calculate for side trend (e.g., 0%)
-            const sideTrendPrice = spotEntryPrice * 1; // Adjust as needed
-            const sideTrendParams = calculateShortHedgeParameters(
-                parsedTargetReturn,
-                parsedDesiredPayout,
-                parsedAvailableMargin,
-                riskAversion,
-                sideTrendPrice,
-                twoWeeksVolume
-            );
-    
-            // Update state
             setCalculatedParams(params);
-            setCalculatedDownTrendParams(downTrendParams);
-            setCalculatedUpTrendParams(upTrendParams);
-            setCalculatedSideTrendParams(sideTrendParams);
+    
+            // Calculate payouts for different scenarios
+            const marketScenarios = [-10, 0, 10]; // Market changes in %
+            const payouts = marketScenarios.map((scenario) => {
+                const exitPrice = spotEntryPrice * (1 + scenario / 100);
+                const result = calculatePayoutShort(
+                    params.spotQuantity, 
+                    spotEntryPrice, 
+                    exitPrice, 
+                    params.shortQuantity / params.spotQuantity, 
+                    params.marginRequired / (params.shortQuantity * spotEntryPrice), 
+                    twoWeeksVolume
+                );
+                return { scenario: `${scenario}%`, payout: result.hedgedPayout };
+            });
+    
+            setPayoutScenarios(payouts);
         } catch (err) {
             console.error('Hedge Calculation Error:', err);
             setError(`Calculation failed: ${err.message}`);
@@ -174,7 +151,7 @@ const ResultBasedShortHedging = () => {
             />
 
             {/* Desired Payout */}
-            <label>Desired Payout ($)</label>
+            <label>Desired No-fees Payout ($)</label>
             <input
                 type="number"
                 step="any"
@@ -211,47 +188,24 @@ const ResultBasedShortHedging = () => {
             {calculatedParams && (
                 <div className="results-container">
                     <h2>Calculated Hedge Parameters</h2>
-                <p>
-                    Buy: {formatNumber(calculatedParams.quantity)} {symbol.value} spot at 
-                    ${formatNumber(spotEntryPrice)}.
-                </p>
-                <p>
-                    Open short with ${formatNumber(calculatedParams.marginRequired)} at 
-                    {formatNumber(calculatedParams.leverage)}x leverage.
-                </p>
+                    <p>Buy <strong>{calculatedParams.spotQuantity}</strong> {symbol.value} spot (${formatNumber(calculatedParams.spotQuantity * spotEntryPrice)}).</p>
+                    <p>Short <strong>{calculatedParams.shortQuantity}</strong> {symbol.value} (${formatNumber(calculatedParams.shortQuantity * spotEntryPrice)}) at <strong>{calculatedParams.leverage}x</strong> leverage.</p>
+                    <p>Required Margin: <strong>${formatNumber(calculatedParams.marginRequired)}</strong></p>
+                    <p>Estimated Fees: <strong>${formatNumber(calculatedParams.fees)}</strong></p>
 
-                <h3>Trend Scenarios</h3>
-                <p><strong>Downtrend (-10%):</strong></p>
-                <p>
-                    Buy: {formatNumber(calculatedDownTrendParams.quantity)} {symbol.value} spot at 
-                    ${formatNumber(spotEntryPrice * 0.9)}.
-                </p>
-                <p>
-                    Open short with ${formatNumber(calculatedDownTrendParams.marginRequired)} at 
-                    {formatNumber(calculatedDownTrendParams.leverage)}x leverage.
-                </p>
-
-                <p><strong>Uptrend (+10%):</strong></p>
-                <p>
-                    Buy: {formatNumber(calculatedUpTrendParams.quantity)} {symbol.value} spot at 
-                    ${formatNumber(spotEntryPrice * 1.1)}.
-                </p>
-                <p>
-                    Open short with ${formatNumber(calculatedUpTrendParams.marginRequired)} at 
-                    {formatNumber(calculatedUpTrendParams.leverage)}x leverage.
-                </p>
-
-                <p><strong>Side Trend (0%):</strong></p>
-                <p>
-                    Buy: {formatNumber(calculatedSideTrendParams.quantity)} {symbol.value} spot at 
-                    ${formatNumber(spotEntryPrice * 1)}.
-                </p>
-                <p>
-                    Open short with ${formatNumber(calculatedSideTrendParams.marginRequired)} at 
-                    {formatNumber(calculatedSideTrendParams.leverage)}x leverage.
-                </p>
+                    {/* Payout Scenarios */}
+                    {payoutScenarios && (
+                        <>
+                            <h2>What would be my payout if the market doesn't go as expected?</h2>
+                            <p>Down scenario (-10%) : <strong>${formatNumber(payoutScenarios[0].payout)}</strong></p>
+                            <p>No change scenario (0%) : <strong>${formatNumber(payoutScenarios[1].payout)}</strong></p>
+                            <p>Up scenario (+10%) : <strong>${formatNumber(payoutScenarios[2].payout)}</strong></p>
+                        </>
+                        
+                    )}
                 </div>
             )}
+
 
             {/* Error Message */}
             {error && <div className="error-message">⚠️ {error}</div>}

@@ -57,6 +57,7 @@ const TrendsChart = ({
     savedTrends['downTrend'] = newTrends['downTrend'];
     savedTrends['sideTrend'] = newTrends['sideTrend'];
     setSeriesData(newTrends[trend]);
+    setIsClosingHedge(false); // Reset hedge closing state
   };
 
   useEffect(() => {
@@ -80,7 +81,6 @@ const TrendsChart = ({
         spot_entry_price,
         parseFloat(close),
         hedgingRatio,
-        marginRate,
         twoWeeksVolume
       ));
     } else {
@@ -116,7 +116,7 @@ const TrendsChart = ({
       twoWeeksVolume
     );
     setBestPayout({ bestSpotPayout, bestHedgedPayout });
-  }, [isClosingHedge, type, seriesData]);
+  }, [isClosingHedge, type, seriesData, trend, hedgingRatio]);
 
   const {max, min} = calculateAmplitude(seriesData);
   const midPoint = (max + min) / 2;
@@ -240,7 +240,7 @@ const TrendsChart = ({
     if (originalClosePriceTemp !== null && hedgeClosePriceTemp !== null) {
       console.log('Calculating payouts...', originalClosePriceTemp, hedgeClosePriceTemp);
       const payout = type === 'spot'
-        ? calculatePayoutShort(quantity, spot_entry_price, originalClosePriceTemp, hedgingRatio, marginRate, twoWeeksVolume).hedgedPayout
+        ? calculatePayoutShort(quantity, spot_entry_price, originalClosePriceTemp, hedgingRatio, twoWeeksVolume).hedgedPayout
         : calculatePayoutFuture(quantity, spot_entry_price, futures_entry_price, originalClosePriceTemp, hedgeClosePriceTemp, hedgingRatio, twoWeeksVolume).hedgedPayout;
       console.log('Payout:', payout);
       const parsedPayout = parseFloat(payout.replace(/,/g, ''));
