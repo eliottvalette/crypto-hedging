@@ -5,6 +5,7 @@ import { getSpotPrice, getFuturesPrice, getAvailableSymbols } from '../utils/dat
 import TrendsChart from './TrendsChart';
 import { customStyles } from '../utils/config';
 import { generateNewTrend } from '../utils/trends';
+import { use } from 'react';
 
 const HedgingScenarios = () => {
     const [hedgeType, setHedgeType] = useState('spot');
@@ -23,6 +24,7 @@ const HedgingScenarios = () => {
     const [totalInvested, setTotalInvested] = useState(0);
     const [totalInvestedLong, setTotalInvestedLong] = useState(0);
     const [totalInvestedShort, setTotalInvestedShort] = useState(0);
+    const [totalInvestedFuture, setTotalInvestedFuture] = useState(0);
     const [twoWeeksVolume, setTwoWeeksVolume] = useState(0);
     const [riskAversion, setRiskAversion] = useState('medium');
     const [activeScenario, setActiveScenario] = useState('up');
@@ -106,9 +108,9 @@ const HedgingScenarios = () => {
         const results = {};
     
         Object.entries(scenarios).forEach(([scenario, exitPrice]) => {
-            results[scenario] = calculatePayoutFuture(Q, P_spot_achat, P_futures_entree, exitPrice, exitPrice, h, twoWeeksVolume);
+            results[scenario] = calculatePayoutFuture(Q, P_spot_achat, P_futures_entree, exitPrice, h, twoWeeksVolume);
         });
-    
+
         setSpotPayouts({
             up: results.up.spotPayout,
             down: results.down.spotPayout,
@@ -121,7 +123,9 @@ const HedgingScenarios = () => {
             neutral: results.neutral.hedgedPayout,
         });
     
-        setTotalInvested(results.neutral.totalInvested);
+        setOptimalLeverage(results.neutral.optimalLeverage);
+        setTotalInvestedLong(results.neutral.totalInvestedLong);
+        setTotalInvestedFuture(results.neutral.totalInvestedFuture);
     };
     
     const handleCalculateShort = () => {
@@ -152,7 +156,7 @@ const HedgingScenarios = () => {
         Object.entries(scenarios).forEach(([scenario, exitPrice]) => {
             results[scenario] = calculatePayoutShort(Q, P_spot_achat, exitPrice, h, twoWeeksVolume);
         });
-    
+
         setSpotPayouts({
             up: results.up.spotPayout,
             down: results.down.spotPayout,
@@ -169,6 +173,10 @@ const HedgingScenarios = () => {
         setTotalInvestedLong(results.neutral.totalInvestedLong);
         setTotalInvestedShort(results.neutral.totalInvestedShort);
     };
+
+    useEffect(() => {
+        setTotalInvested(quantity * spotEntryPrice);
+    }, [quantity, spotEntryPrice]);
 
     const handleTotalInvestedChange = (e) => {
         const value = e.target.value.replace(/,/g, ''); // Remove commas
@@ -223,7 +231,7 @@ const HedgingScenarios = () => {
                         min="0"
                         step="0.01"
                     />
-                    <label>Total Invested Long ($)</label>
+                    <label>Total Investing Long ($)</label>
                     <input
                         type="text"
                         value={totalInvested.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
@@ -271,7 +279,7 @@ const HedgingScenarios = () => {
                                     <p>With Hedge: ${formatNumber(hedgedPayouts.neutral)}</p>
                                 </div>
                             </div>
-                            <h3>Stock Trend Simualtion</h3>
+                            <h2>Stock Trend Simualtion</h2>
                             <TrendsChart 
                                 className="trends-chart" 
                                 symbol={symbol.value}
@@ -338,7 +346,7 @@ const HedgingScenarios = () => {
                         min="0"
                         step="0.01"
                     />
-                    <label>Total Invested ($)</label>
+                    <label>Total Investing Long ($)</label>
                     <input
                         type="text"
                         value={totalInvested.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
@@ -380,6 +388,8 @@ const HedgingScenarios = () => {
                     {spotPayouts.up !== null && (
                         <div className="results-container">
                             <h2>Futures Hedging Results</h2>
+                            <p>Total Invested Long: ${formatNumber(totalInvestedLong)}</p>
+                            <p>Total Invested Short: ${formatNumber(totalInvestedFuture)} at {formatNumber(optimalLeverage)}x Leverage</p>
                             <div className="results-types-container">
                                 <>
                                     <div className={`results-up ${activeScenario === 'up' ? 'active' : ''}`} onClick={() => { setTrend('upTrend'); setActiveScenario('up'); }}>

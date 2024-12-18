@@ -41,52 +41,69 @@ function calculateFEE_RATES(twoWeeksVolume) {
     }
 }
 
-const apiInfo = {
-    marginRate: 0.05,
-}
-
 function formatNumber(number) {
     return number.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 // Adjusted Calculate payouts for Futures Hedging
-export function calculatePayoutFuture(quantity, spotEntryPrice, futuresEntryPrice, spotExitPrice, futuresExitPrice, hedgingRatio, twoWeeksVolume) {
+export function calculatePayoutFuture(quantity, spotEntryPrice, futuresEntryPrice, ExitPrice, hedgingRatio, twoWeeksVolume) {
     const fees = calculateFEE_RATES(twoWeeksVolume);
+    const Q = parseFloat(quantity) || 1;
+    const h = parseFloat(hedgingRatio) || 0;
 
-    const Q = parseFloat(quantity) || 1; // Total quantity
-    const P_spot_achat = parseFloat(spotEntryPrice) || 1; // Spot entry price
-    const P_futures_entree = parseFloat(futuresEntryPrice) || 1; // Futures entry price
-    const P_spot_vente = parseFloat(spotExitPrice) || 1; // Spot exit price
-    const P_futures_sortie = parseFloat(futuresExitPrice) || 1; // Futures close price
-    const h = parseFloat(hedgingRatio) || 0.03; // Hedging ratio (default: 3%)
-
-    if (!Q || !P_spot_achat || !P_futures_entree || !P_spot_vente || !P_futures_sortie || h < 0 || h > 1) {
-        console.error("Invalid inputs for futures calculation:", { Q, P_spot_achat, P_futures_entree, P_spot_vente, P_futures_sortie, h });
-        return { spotPayout: 0, hedgedPayout: 0, totalInvested: 0 };
+    if (!Q || !spotEntryPrice || !futuresEntryPrice || !ExitPrice || h < 0 || h > 1) {
+        console.error("Invalid inputs for future payout calculation:", { Q, spotEntryPrice, futuresEntryPrice, ExitPrice, hedgingRatio });
+        return { spotPayout: 0, hedgedPayout: 0, leverage: 0, totalInvestedLong: 0, totalInvestedFuture: 0 };
     }
 
-    // Spot-only P&L
-    const P_L_spot = Q * (P_spot_vente - P_spot_achat); // Profit/Loss on spot position
-    const Fees_spot = Q * P_spot_achat * fees.makerFee; // Maker fees on spot
-    const spotPayout = P_L_spot - Fees_spot; // Net payout for spot position
+    // Long futures
+    const Q_long = Q * (1 - h / 2);
+    const totalInvestedLong = Q_long * futuresEntryPrice;
+    const spotPayout = Q_long * (ExitPrice - futuresEntryPrice) - Q * futuresEntryPrice * fees.takerFee;
 
-    // Futures P&L
-    const P_L_futures = - Q * h * (P_futures_sortie - P_futures_entree); // Profit/Loss on futures position
-    const Funding_Fee = Q * h * P_futures_entree * fees.fundingFee; // Funding fee applied on futures entry
-    const Fees_futures = Q * h * P_futures_entree * fees.takerFee; // Taker fees on futures
-    const Total_Fees = Fees_spot + Fees_futures + Funding_Fee; // Total fees across both positions
+    // Hedged futures
+    const Q_short = Q * h / 2;
+    const totalInvestedFuture = Q_short * futuresEntryPrice;
+    const shortPayout = Q_short * (futuresEntryPrice - ExitPrice) - Q_short * futuresEntryPrice * fees.takerFee;
 
-    // Hedged Payout
-    const hedgedPayout = P_L_spot - P_L_futures - Total_Fees;
+    // Combined payout
+    const hedgedPayout = spotPayout + shortPayout;
+    const optimalLeverage = totalInvestedFuture / (Q_short * futuresEntryPrice);
 
-    // Total invested capital
-    const totalInvested = Q * P_spot_achat;
-
-    // Return results with proper formatting
     return {
         spotPayout: formatNumber(spotPayout),
         hedgedPayout: formatNumber(hedgedPayout),
-        totalInvested: formatNumber(totalInvested),
+        optimalLeverage: formatNumber(optimalLeverage),
+        totalInvestedLong: formatNumber(totalInvestedLong),
+        totalInvestedFuture: formatNumber(totalInvestedFuture),
+    };
+}
+
+
+export function calculatePayoutFutureDelay(quantity, spotEntryPrice, futuresEntryPrice, longExitPrice, futureExitPrice, hedgingRatio, twoWeeksVolume) {
+    const fees = calculateFEE_RATES(twoWeeksVolume);
+    const Q = parseFloat(quantity) || 1;
+    const hedgingRatioFloat = parseFloat(hedgingRatio) || 0;
+
+    if (!Q || !spotEntryPrice || !futuresEntryPrice || !longExitPrice || !futureExitPrice || hedgingRatioFloat < 0 || hedgingRatioFloat > 1) {
+        console.error("Invalid inputs for delayed future payout calculation:", { Q, spotEntryPrice, futuresEntryPrice, longExitPrice, futureExitPrice, hedgingRatio });
+        return { spotPayout: 0, hedgedPayout: 0 };
+    }
+
+    // Long futures
+    const Q_long = Q * (1 - hedgingRatioFloat / 2);
+    const spotPayout = Q_long * (longExitPrice - futuresEntryPrice) - Q * futuresEntryPrice * fees.takerFee;
+
+    // Hedged futures
+    const Q_short = Q * hedgingRatioFloat / 2;
+    const shortPayout = Q_short * (futuresEntryPrice - futureExitPrice) - Q_short * futuresEntryPrice * fees.takerFee;
+
+    // Combined payout
+    const hedgedPayout = spotPayout + shortPayout;
+
+    return {
+        spotPayout: formatNumber(spotPayout),
+        hedgedPayout: formatNumber(hedgedPayout),
     };
 }
 
@@ -119,21 +136,44 @@ export function calculatePayoutShort(quantity, spotEntryPrice, spotExitPrice, he
     const Frais_short = Q_short * P_spot_achat * fees.takerFee; // Fees for the short position
 
     // Adjusted Payout
-    const longPayout = P_L_long - Frais_long;
+    const spotPayout = P_L_long - Frais_long;
     const shortPayout = P_L_short - Frais_short;
 
     // Hedged Payout (Long + Short - Fees)
-    const hedgedPayout = longPayout + shortPayout;
+    const hedgedPayout = spotPayout + shortPayout;
 
     // Optimal Leverage for Short
     const optimalLeverage = totalInvestedShort / (Q_short * P_spot_achat);
 
     return {
-        spotPayout: formatNumber(longPayout),
+        spotPayout: formatNumber(spotPayout),
         hedgedPayout: formatNumber(hedgedPayout),
         optimalLeverage: formatNumber(optimalLeverage),
         totalInvestedLong: formatNumber(totalInvestedLong),
         totalInvestedShort: formatNumber(totalInvestedShort),
+    };
+}
+
+export function calculatePayoutShortDelay(Q, P_spot_achat, LongClose, ShortClose, h, twoWeeksVolume) {
+    // Re-use the calculatePayoutShort logic
+    const fees = calculateFEE_RATES(twoWeeksVolume);
+
+    const Q_long = Q * (1 - h / 2);
+    const P_L_long = Q_long * (LongClose - P_spot_achat);
+
+    const Q_short = Q * h / 2;
+    const P_L_short = Q_short * (P_spot_achat - ShortClose);
+
+    const Frais_long = Q * P_spot_achat * fees.takerFee; // Fees for the long position
+    const Frais_short = Q_short * P_spot_achat * fees.takerFee; // Fees for the short position
+
+    // Adjusted Payout
+    const spotPayout = P_L_long - Frais_long;
+    const shortPayout = P_L_short - Frais_short;
+
+    return {
+        spotPayout: spotPayout,
+        hedgedPayout: shortPayout + spotPayout,
     };
 }
 
@@ -188,8 +228,6 @@ export const calculateBestPayout = (seriesData, type, quantity, spot_entry_price
         return { bestSpotPayout: 0, bestHedgedPayout: 0 };
     }
 
-    const fees = calculateFEE_RATES(twoWeeksVolume);
-
     const Q = parseFloat(quantity) || 1;
     const h = parseFloat(hedgingRatio) || 0.03;
     const P_spot_achat = parseFloat(spot_entry_price) || 1;
@@ -207,25 +245,14 @@ export const calculateBestPayout = (seriesData, type, quantity, spot_entry_price
     let bestHedgedPayout = 0;
 
     if (type === 'spot') {
-        // Re-use the calculatePayoutShort logic
-        const Q_long = Q * (1 - h / 2);
-        const P_L_long = Q_long * (highestClose - P_spot_achat);
-
-        const Q_short = Q * h / 2;
-        const P_L_short = Q_short * (P_spot_achat - lowestClose);
-
-        const Frais_long = Q * P_spot_achat * fees.takerFee; // Fees for the long position
-        const Frais_short = Q_short * P_spot_achat * fees.takerFee; // Fees for the short position
-
-        // Adjusted Payout
-        const longPayout = P_L_long - Frais_long;
-        const shortPayout = P_L_short - Frais_short;
-
-        console.log('longPayout', longPayout);
-        console.log('shortPayout', shortPayout);
-
-        bestSpotPayout = longPayout;
-        bestHedgedPayout = longPayout + shortPayout;
+        ({ spotPayout: bestSpotPayout, hedgedPayout: bestHedgedPayout } = calculatePayoutShortDelay(
+            Q,
+            P_spot_achat,
+            highestClose,
+            lowestClose,
+            h,
+            twoWeeksVolume
+        ));
 
     } else if (type === 'future') {
         ({ spotPayout: bestSpotPayout, hedgedPayout: bestHedgedPayout } = calculatePayoutFuture(
@@ -244,3 +271,4 @@ export const calculateBestPayout = (seriesData, type, quantity, spot_entry_price
         bestHedgedPayout: formatNumber(bestHedgedPayout),
     };
 };
+

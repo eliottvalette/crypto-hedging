@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import Chart from 'react-apexcharts';
 import { savedTrends } from '../utils/trends';
-import { calculatePayoutFuture, calculatePayoutShort, calculateBestPayout } from '../utils/hedging';
+import { calculatePayoutFuture, calculatePayoutShort, calculateBestPayout, calculatePayoutShortDelay, calculatePayoutFutureDelay } from '../utils/hedging';
 import { useState, useEffect } from 'react';
 import { FaRedo } from 'react-icons/fa';
 import 'apexcharts/dist/apexcharts.css';
@@ -89,7 +89,6 @@ const TrendsChart = ({
         spot_entry_price,
         futures_entry_price,
         parseFloat(close),
-        parseFloat(close),
         hedgingRatio,
         twoWeeksVolume
       ));
@@ -112,7 +111,6 @@ const TrendsChart = ({
       spot_entry_price,
       futures_entry_price,
       hedgingRatio,
-      marginRate,
       twoWeeksVolume
     );
     setBestPayout({ bestSpotPayout, bestHedgedPayout });
@@ -240,13 +238,12 @@ const TrendsChart = ({
     if (originalClosePriceTemp !== null && hedgeClosePriceTemp !== null) {
       console.log('Calculating payouts...', originalClosePriceTemp, hedgeClosePriceTemp);
       const payout = type === 'spot'
-        ? calculatePayoutShort(quantity, spot_entry_price, originalClosePriceTemp, hedgingRatio, twoWeeksVolume).hedgedPayout
-        : calculatePayoutFuture(quantity, spot_entry_price, futures_entry_price, originalClosePriceTemp, hedgeClosePriceTemp, hedgingRatio, twoWeeksVolume).hedgedPayout;
+        ? calculatePayoutShortDelay(quantity, spot_entry_price, originalClosePriceTemp, hedgeClosePriceTemp, hedgingRatio, twoWeeksVolume).hedgedPayout
+        : calculatePayoutFutureDelay(quantity, spot_entry_price, futures_entry_price, originalClosePriceTemp, hedgeClosePriceTemp, hedgingRatio, twoWeeksVolume).hedgedPayout;
       console.log('Payout:', payout);
-      const parsedPayout = parseFloat(payout.replace(/,/g, ''));
-      if (!isNaN(parsedPayout)) {
-        setAdjustedPayout(parsedPayout);
-        console.log('Adjusted Payout:', parsedPayout);
+      if (!isNaN(payout)) {
+        setAdjustedPayout(payout);
+        console.log('Adjusted Payout:', payout);
       }
 
       setOriginalClosePrice(originalClosePriceTemp);
