@@ -5,7 +5,9 @@ function Aside() {
   return (
     <aside className="aside">
       <div className="aside-top">
+        <NavLink to="/">
         <h1>Crypto Hedge</h1>
+        </NavLink>
         <nav>
           <ul className="nav-ul">
             <li>

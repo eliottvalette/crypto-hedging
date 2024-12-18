@@ -10,7 +10,7 @@ const ResultBasedShortHedging = () => {
     const [targetReturn, setTargetReturn] = useState(10);
     const [targetReturnText, setTargetReturnText] = useState('+10%');
     const [desiredPayout, setDesiredPayout] = useState('1000');
-    const [availableMargin, setAvailableMargin] = useState('2000');
+    const [availableMargin, setAvailableMargin] = useState('500');
     const [riskAversion, setRiskAversion] = useState('medium');
     const [calculatedParams, setCalculatedParams] = useState(null);
 

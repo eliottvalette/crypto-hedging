@@ -57,7 +57,7 @@ const TrendsChart = ({
     savedTrends['downTrend'] = newTrends['downTrend'];
     savedTrends['sideTrend'] = newTrends['sideTrend'];
     setSeriesData(newTrends[trend]);
-    setIsClosingHedge(false); // Reset hedge closing state
+    setIsClosingHedge(isClosingHedge);
   };
 
   useEffect(() => {
@@ -236,20 +236,15 @@ const TrendsChart = ({
 
   useEffect(() => {
     if (originalClosePriceTemp !== null && hedgeClosePriceTemp !== null) {
-      console.log('Calculating payouts...', originalClosePriceTemp, hedgeClosePriceTemp);
       const payout = type === 'spot'
         ? calculatePayoutShortDelay(quantity, spot_entry_price, originalClosePriceTemp, hedgeClosePriceTemp, hedgingRatio, twoWeeksVolume).hedgedPayout
         : calculatePayoutFutureDelay(quantity, spot_entry_price, futures_entry_price, originalClosePriceTemp, hedgeClosePriceTemp, hedgingRatio, twoWeeksVolume).hedgedPayout;
-      console.log('Payout:', payout);
-      if (!isNaN(payout)) {
-        setAdjustedPayout(payout);
-        console.log('Adjusted Payout:', payout);
-      }
-
+      
+      setAdjustedPayout(payout);
       setOriginalClosePrice(originalClosePriceTemp);
       setHedgeClosePrice(hedgeClosePriceTemp);
     }
-  }, [originalClosePriceTemp, hedgeClosePriceTemp]);
+  }, [quantity, spot_entry_price, originalClosePriceTemp, hedgeClosePriceTemp, hedgingRatio, twoWeeksVolume]);
 
   return (
     <div id="chart">
@@ -269,7 +264,7 @@ const TrendsChart = ({
           </button>
         </div>
         <div className="reload-button-container">
-          <button onClick={generateTrend} className="reload-button">
+          <button onClick={() => { generateTrend(); setAdjustedPayout(null); }} className="reload-button">
             <FaRedo /> Generate New Trend
           </button>
         </div>

@@ -185,6 +185,9 @@ const HedgingScenarios = () => {
         }
     };
 
+    console.log('adjustedPayout:', adjustedPayout);
+
+
     return (
         <div className="calculator-container">
             <div className="buttons-container">

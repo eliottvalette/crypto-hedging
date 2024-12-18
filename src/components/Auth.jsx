@@ -84,7 +84,7 @@ function Auth() {
       <div className="auth-box">
         {isRegistering ? (
           <>
-            <img src="src/assets/shield.png" alt="lock" className="auth-img" />
+            <img src="/shield.png" alt="lock" className="auth-img"/>
             <h2 className="auth-title">Login</h2>
             {error && <p className="auth-error">{error}</p>}
             <input
