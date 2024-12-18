@@ -45,6 +45,16 @@ function formatNumber(number) {
     return number.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
+function calculateFees(quantity, entryPrice, feeRate) {
+    return quantity * entryPrice * feeRate;
+}
+
+function calculatePayout(longQuantity, shortQuantity, entryPrice, exitPrice, fees) {
+    const longPayout = longQuantity * (exitPrice - entryPrice) - fees.long;
+    const shortPayout = shortQuantity * (entryPrice - exitPrice) - fees.short;
+    return longPayout + shortPayout;
+}
+
 // Adjusted Calculate payouts for Futures Hedging
 export function calculatePayoutFuture(quantity, spotEntryPrice, futuresEntryPrice, ExitPrice, hedgingRatio, twoWeeksVolume) {
     const fees = calculateFEE_RATES(twoWeeksVolume);
@@ -60,26 +70,25 @@ export function calculatePayoutFuture(quantity, spotEntryPrice, futuresEntryPric
     // Long futures
     const Q_long = Q * (1 - h / 2);
     const totalInvestedLong = Q_long * futuresEntryPrice;
-    const spotPayout = Q_long * (ExitPrice - futuresEntryPrice) - Q * futuresEntryPrice * fees.takerFee;
+    const longFees = calculateFees(Q, futuresEntryPrice, fees.takerFee);
 
     // Hedged futures
     const Q_short = Q * h / 2;
     const totalInvestedFuture = Q_short * futuresEntryPrice;
-    const shortPayout = Q_short * (futuresEntryPrice - ExitPrice) - Q_short * futuresEntryPrice * fees.takerFee;
+    const shortFees = calculateFees(Q_short, futuresEntryPrice, fees.takerFee);
 
     // Combined payout
-    const hedgedPayout = spotPayout + shortPayout;
+    const hedgedPayout = calculatePayout(Q_long, Q_short, futuresEntryPrice, ExitPrice, { long: longFees, short: shortFees });
     const optimalLeverage = totalInvestedFuture / (Q_short * futuresEntryPrice);
 
     return {
-        spotPayout: formatNumber(spotPayout),
+        spotPayout: formatNumber(Q_long * (ExitPrice - futuresEntryPrice) - longFees),
         hedgedPayout: formatNumber(hedgedPayout),
         optimalLeverage: formatNumber(optimalLeverage),
         totalInvestedLong: formatNumber(totalInvestedLong),
         totalInvestedFuture: formatNumber(totalInvestedFuture),
     };
 }
-
 
 export function calculatePayoutFutureDelay(quantity, spotEntryPrice, futuresEntryPrice, longExitPrice, futureExitPrice, hedgingRatio, twoWeeksVolume) {
     const fees = calculateFEE_RATES(twoWeeksVolume);
@@ -155,8 +164,7 @@ export function calculatePayoutShort(quantity, spotEntryPrice, spotExitPrice, he
     };
 }
 
-export function calculatePayoutShortDelay(Q, P_spot_achat, LongClose, ShortClose, h, twoWeeksVolume) {
-    // Re-use the calculatePayoutShort logic
+export function calculatePayoutShortDelay(Q, P_spot_achat, LongClose, ShortClose, h, twoWeeksVolume) {    
     const fees = calculateFEE_RATES(twoWeeksVolume);
 
     const Q_long = Q * (1 - h / 2);
@@ -228,45 +236,29 @@ export const calculateBestPayout = (seriesData, type, quantity, spot_entry_price
     };
 };
 
-export function calculateShortHedgeParameters(
-    targetReturn,         // % change (+ or -)
-    desiredPayout,        // Desired $ profit
-    availableMargin,      // $ margin available
-    riskAversion,         // Risk level: low, medium, high
-    spotPrice,            // Current spot price of the asset
-    twoWeeksVolume        // Trading volume for fee calculation
-) {
+export function calculateShortHedgeParameters({
+    spotEntryPrice,
+    desiredPayout,
+    availableMargin,
+    riskAversion,
+    twoWeeksVolume,
+}) {
     const fees = calculateFEE_RATES(twoWeeksVolume);
 
-    // Parse and validate inputs
-    const returnMultiplier = parseFloat(targetReturn) / 100; // Convert % to decimal
-    const payout = parseFloat(desiredPayout);
-    const margin = parseFloat(availableMargin);
-    const price = parseFloat(spotPrice);
+    // Calculate required quantities based on risk aversion and margin
+    const leverage = riskAversion === 'low' ? 2 : riskAversion === 'medium' ? 5 : 10;
+    const shortQuantity = availableMargin / (spotEntryPrice * leverage);
+    const spotQuantity = desiredPayout / spotEntryPrice;
 
-    if (!returnMultiplier || !payout || !margin || !price || margin <= 0 || price <= 0 || payout <= 0) {
-        console.error("Invalid inputs for short hedge parameters:", { targetReturn, desiredPayout, availableMargin, spotPrice });
-        return { spotQuantity: 0, shortQuantity: 0, leverage: 0, marginRequired: 0, fees: 0 };
-    }
-
-    // Define risk-based leverage
-    const leverageRiskMap = { low: 2, medium: 5, high: 10 };
-    const leverage = leverageRiskMap[riskAversion] || 5; // Default to medium
-
-    // Calculate quantities and margin
-    const marginPerContract = margin / leverage;
-    const shortQuantity = marginPerContract / price; // Short quantity based on margin
-    const targetSpotGain = payout / returnMultiplier; // Required gain to achieve payout
-    const spotQuantity = targetSpotGain / price; // Spot quantity to hedge short position
-
-    // Calculate total fees for the short position
-    const totalFees = shortQuantity * price * fees.takerFee;
+    // Calculate fees and margin required
+    const marginRequired = shortQuantity * spotEntryPrice / leverage;
+    const totalFees = shortQuantity * spotEntryPrice * fees.takerFee;
 
     return {
-        spotQuantity: formatNumber(spotQuantity),      // Quantity to buy spot
-        shortQuantity: formatNumber(shortQuantity),    // Quantity to short
-        leverage: formatNumber(leverage),              // Optimal leverage
-        marginRequired: formatNumber(marginPerContract), // Margin required for short position
-        fees: formatNumber(totalFees),                 // Total fees
+        spotQuantity,
+        shortQuantity,
+        leverage,
+        marginRequired,
+        fees: totalFees,
     };
 }

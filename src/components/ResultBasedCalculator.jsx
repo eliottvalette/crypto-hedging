@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react';
 import Select from 'react-select';
-import { calculateShortHedgeParameters, calculatePayoutShort } from '../utils/hedging';
+import { calculateShortHedgeParameters, calculatePayoutShortDelay } from '../utils/hedging';
 import { getSpotPrice, getAvailableSymbols } from '../utils/data';
 import { customStyles } from '../utils/config';
-import { use } from 'react';
 
 const ResultBasedShortHedging = () => {
     // Store input values as strings for maximum control
@@ -20,13 +19,13 @@ const ResultBasedShortHedging = () => {
     const [availableSymbols, setAvailableSymbols] = useState([]);
     const [twoWeeksVolume, setTwoWeeksVolume] = useState(0);
     const [error, setError] = useState('');
-    const [payoutScenarios, setPayoutScenarios] = useState(null);
+    const [payoutScenarios, setPayoutScenarios] = useState({low:null, noChange:null, high:null});
 
     // Risk aversion dropdown
     const riskAversionOptions = [
-        { value: 'low', label: 'Low' },
-        { value: 'medium', label: 'Medium' },
-        { value: 'high', label: 'High' }
+        { value: 'low', label: 'Low', hedging: 0.03 },
+        { value: 'medium', label: 'Medium', hedging: 0.25 },
+        { value: 'high', label: 'High', hedging: 0.5 }
     ];
 
     // Fetch the list of available symbols once
@@ -38,6 +37,7 @@ const ResultBasedShortHedging = () => {
                 setAvailableSymbols(symbolOptions);
             } catch (err) {
                 console.error('Error fetching symbols:', err);
+                setError('Failed to fetch symbols.');
             }
         }
         fetchSymbols();
@@ -53,10 +53,6 @@ const ResultBasedShortHedging = () => {
         setTargetReturn(formatTargetReturn(targetReturnText));
     }, [targetReturnText]);
 
-    console.log('targetReturnText', targetReturnText)
-    console.log('targetReturn', targetReturn)
-
-
     // Fetch the spot price whenever the symbol changes
     useEffect(() => {
         async function fetchPrices() {
@@ -65,18 +61,19 @@ const ResultBasedShortHedging = () => {
                 setSpotEntryPrice(parseFloat(spotPrice));
             } catch (err) {
                 console.error('Error fetching spot price:', err);
+                setError('Failed to fetch spot price.');
             }
         }
         fetchPrices();
     }, [symbol]);
 
     const handleCalculateHedge = () => {
-        setError(''); // Reset any old errors
-        
+        setError('');
+
         const parsedTargetReturn = parseFloat(targetReturn);
         const parsedDesiredPayout = parseFloat(desiredPayout);
         const parsedAvailableMargin = parseFloat(availableMargin);
-    
+
         if (
             isNaN(parsedTargetReturn) ||
             isNaN(parsedDesiredPayout) ||
@@ -86,36 +83,56 @@ const ResultBasedShortHedging = () => {
             setError('Please enter valid numerical values in all fields.');
             return;
         }
-    
+
         try {
+            // Extract hedging ratio based on risk aversion
+            const selectedRisk = riskAversionOptions.find(option => option.value === riskAversion);
+            const hedgingRatio = selectedRisk?.hedging || 0.25;
+
             // Calculate parameters for the current spot price
-            const params = calculateShortHedgeParameters(
-                parsedTargetReturn,
-                parsedDesiredPayout,
-                parsedAvailableMargin,
-                riskAversion,
+            const params = calculateShortHedgeParameters({
                 spotEntryPrice,
+                desiredPayout: parsedDesiredPayout,
+                availableMargin: parsedAvailableMargin,
+                riskAversion,
+                twoWeeksVolume
+            });
+
+            // Calculate payout scenarios
+            const downScenario = calculatePayoutShortDelay(
+                params.spotQuantity,
+                spotEntryPrice,
+                spotEntryPrice * 0.9,
+                spotEntryPrice,
+                hedgingRatio,
                 twoWeeksVolume
             );
-    
-            setCalculatedParams(params);
-    
-            // Calculate payouts for different scenarios
-            const marketScenarios = [-10, 0, 10]; // Market changes in %
-            const payouts = marketScenarios.map((scenario) => {
-                const exitPrice = spotEntryPrice * (1 + scenario / 100);
-                const result = calculatePayoutShort(
-                    params.spotQuantity, 
-                    spotEntryPrice, 
-                    exitPrice, 
-                    params.shortQuantity / params.spotQuantity, 
-                    params.marginRequired / (params.shortQuantity * spotEntryPrice), 
-                    twoWeeksVolume
-                );
-                return { scenario: `${scenario}%`, payout: result.hedgedPayout };
+
+            const noChangeScenario = calculatePayoutShortDelay(
+                params.spotQuantity,
+                spotEntryPrice,
+                spotEntryPrice,
+                spotEntryPrice,
+                hedgingRatio,
+                twoWeeksVolume
+            );
+
+            const upScenario = calculatePayoutShortDelay(
+                params.spotQuantity,
+                spotEntryPrice,
+                spotEntryPrice * 1.1,
+                spotEntryPrice,
+                hedgingRatio,
+                twoWeeksVolume
+            );
+
+            setPayoutScenarios({
+                low: formatNumber(downScenario.hedgedPayout),
+                noChange: formatNumber(noChangeScenario.hedgedPayout),
+                high: formatNumber(upScenario.hedgedPayout)
             });
-    
-            setPayoutScenarios(payouts);
+
+            setCalculatedParams(params);
         } catch (err) {
             console.error('Hedge Calculation Error:', err);
             setError(`Calculation failed: ${err.message}`);
@@ -192,14 +209,13 @@ const ResultBasedShortHedging = () => {
                     <p>Short <strong>{calculatedParams.shortQuantity}</strong> {symbol.value} (${formatNumber(calculatedParams.shortQuantity * spotEntryPrice)}) at <strong>{calculatedParams.leverage}x</strong> leverage.</p>
                     <p>Required Margin: <strong>${formatNumber(calculatedParams.marginRequired)}</strong></p>
                     <p>Estimated Fees: <strong>${formatNumber(calculatedParams.fees)}</strong></p>
-
                     {/* Payout Scenarios */}
                     {payoutScenarios && (
                         <>
                             <h2>What would be my payout if the market doesn't go as expected?</h2>
-                            <p>Down scenario (-10%) : <strong>${formatNumber(payoutScenarios[0].payout)}</strong></p>
-                            <p>No change scenario (0%) : <strong>${formatNumber(payoutScenarios[1].payout)}</strong></p>
-                            <p>Up scenario (+10%) : <strong>${formatNumber(payoutScenarios[2].payout)}</strong></p>
+                            <p>Down scenario (-10%) : <strong>${formatNumber(payoutScenarios.low)}</strong></p>
+                            <p>No change scenario (0%) : <strong>${formatNumber(payoutScenarios.noChange)}</strong></p>
+                            <p>Up scenario (+10%) : <strong>${formatNumber(payoutScenarios.high)}</strong></p>
                         </>
                         
                     )}
