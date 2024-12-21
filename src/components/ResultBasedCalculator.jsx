@@ -23,7 +23,6 @@ const ResultBasedShortHedging = () => {
     const [payoutScenarios, setPayoutScenarios] = useState({low:null, noChange:null, high:null});
     const [isUsingLeverage, setIsUsingLeverage] = useState(false);
 
-
     // Fetch the list of available symbols once
     useEffect(() => {
         async function fetchSymbols() {
@@ -256,6 +255,7 @@ const ResultBasedShortHedging = () => {
                     <p>Buy <strong>{calculatedParams.spotQuantity}</strong> {symbol.value} spot (${formatNumber(calculatedParams.spotQuantity * spotEntryPrice)}).</p>
                     <p>Short <strong>{calculatedParams.shortQuantity}</strong> {symbol.value} (${formatNumber(calculatedParams.shortQuantity * spotEntryPrice)}) at <strong>{calculatedParams.leverage}x</strong> leverage.</p>
                     <p>Estimated Fees: <strong>${formatNumber(calculatedParams.fees)}</strong></p>
+                    {isUsingLeverage && <p>Required Margin : <strong>${formatNumber(calculatedParams.requiredMargin)}</strong></p>}
                     {/* Payout Scenarios */}
                     {payoutScenarios && (
                         <>

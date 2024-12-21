@@ -309,7 +309,11 @@ main {
   gap: 8px;
 }
 
-.result-based-result-based-button{
+.result-based-button{
+  grid-column: 1 / -1;
+}
+
+.results-container{
   grid-column: 1 / -1;
 }
 
