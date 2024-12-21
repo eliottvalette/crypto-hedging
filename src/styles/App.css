@@ -321,6 +321,10 @@ main {
   margin-bottom: 0;
 }
 
+.second-title {
+  margin-top: 1.5rem;
+}
+
 .results-without{
   color: #ffffff86;
 }

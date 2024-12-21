@@ -390,7 +390,7 @@ const HedgingScenarios = () => {
                                     </div>
                                 </>
                             </div>
-                            <h3>Stock Trend Simualtion</h3>
+                            <h2 className="second-title">Stock Trend Simualtion</h2>
                             <TrendsChart 
                                 className="trends-chart" 
                                 symbol={symbol.value}
