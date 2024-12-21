@@ -9,9 +9,10 @@ const ResultBasedShortHedging = () => {
     const [targetReturn, setTargetReturn] = useState(10);
     const [targetReturnText, setTargetReturnText] = useState('+10%');
     const [desiredPayout, setDesiredPayout] = useState('1000');
-    const [availableMargin, setAvailableMargin] = useState('500');
+    const [availableMargin, setAvailableMargin] = useState('2000');
     const [riskAversion, setRiskAversion] = useState('medium');
     const [calculatedParams, setCalculatedParams] = useState(null);
+    const [hedgingRatio, setHedgingRatio] = useState(50);
 
     // Additional states
     const [spotEntryPrice, setSpotEntryPrice] = useState(0);
@@ -158,23 +159,23 @@ const ResultBasedShortHedging = () => {
                 styles={customStyles}
             />
 
+            {/* Available Margin */}
+            <label>Spot Entry Price ($)</label>
+            <input
+                type="number"
+                step="any"
+                placeholder="Available margin"
+                value={availableMargin}
+                onChange={(e) => setAvailableMargin(e.target.value)}
+            />
+
             {/* Target Exit Input */}
-            <label>What's your target exit? (%)</label>
+            <label>Exit Target ( % Price Variation ) </label>
             <input
                 type="text" 
                 placeholder="+10% or -5%"
                 value={targetReturnText}
                 onChange={(e) => setTargetReturnText(e.target.value)}
-            />
-
-            {/* Desired Payout */}
-            <label>Desired No-fees Payout ($)</label>
-            <input
-                type="number"
-                step="any"
-                placeholder="Desired payout"
-                value={desiredPayout}
-                onChange={(e) => setDesiredPayout(e.target.value)}
             />
 
             {/* Available Margin */}
@@ -187,14 +188,35 @@ const ResultBasedShortHedging = () => {
                 onChange={(e) => setAvailableMargin(e.target.value)}
             />
 
-            {/* Risk Aversion */}
-            <label>Risk Aversion</label>
-            <Select
-                value={riskAversionOptions.find(option => option.value === riskAversion)}
-                onChange={(option) => setRiskAversion(option.value)}
-                options={riskAversionOptions}
-                className="currency-select"
-                styles={customStyles}
+            {/* Available Margin */}
+            <label>Leverage</label>
+            <input
+                type="number"
+                step="any"
+                placeholder="Leverage"
+                value={5}
+                onChange={(e) => setAvailableMargin(e.target.value)}
+            />
+
+            {/* Desired Payout */}
+            <label>Desired No-fees Payout ($)</label>
+            <input
+                type="number"
+                step="any"
+                placeholder="Desired payout"
+                value={desiredPayout}
+                onChange={(e) => setDesiredPayout(e.target.value)}
+            />
+            
+            {/* Hedging Ratio */}
+            <label>Percentage of my position I want covered : {hedgingRatio} %</label>
+            <input
+                type="range"
+                min="0"
+                max="100"
+                step="0.5"
+                value={hedgingRatio}
+                onChange={(e) => setHedgingRatio(e.target.value)}
             />
 
             <button onClick={handleCalculateHedge} className='calculate-button'>

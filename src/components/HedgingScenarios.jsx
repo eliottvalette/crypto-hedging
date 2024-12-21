@@ -13,7 +13,7 @@ const HedgingScenarios = () => {
     const [quantity, setQuantity] = useState(1);
     const [spotEntryPrice, setSpotEntryPrice] = useState(0);
     const [futuresEntryPrice, setFuturesEntryPrice] = useState(0);
-    const [hedgingRatio, setHedgingRatio] = useState(0.03);
+    const [hedgingRatio, setHedgingRatio] = useState(0.5);
     const [platform, setPlatform] = useState('Binance');
     const [availableSymbols, setAvailableSymbols] = useState([]);
     const [spotPayouts, setSpotPayouts] = useState({ up: null, down: null, neutral: null });
@@ -32,12 +32,6 @@ const HedgingScenarios = () => {
     const [originalClosePrice, setOriginalClosePrice] = useState(null);
     const [hedgeClosePrice, setHedgeClosePrice] = useState(null);
     const [bestPayout, setBestPayout] = useState({ bestSpotPayout: 0, bestHedgedPayout: 0 });
-
-    const riskAversionOptions = [
-        { value: 'low', label: 'Low' },
-        { value: 'medium', label: 'Medium' },
-        { value: 'high', label: 'High' }
-    ];
 
     const formatNumber = (number) => {
         return number.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -250,14 +244,6 @@ const HedgingScenarios = () => {
                         value={hedgingRatio}
                         onChange={(e) => setHedgingRatio(e.target.value)}
                     />
-                    <label>Risk Aversion</label>
-                    <Select
-                        value={riskAversionOptions.find(option => option.value === riskAversion)}
-                        onChange={(option) => setRiskAversion(option.value)}
-                        options={riskAversionOptions}
-                        className="currency-select"
-                        styles={customStyles}
-                    />
                     <button onClick={handleCalculateShort} className='calculate-button'>Calculate</button>
     
                     {spotPayouts.up !== null && (
@@ -282,7 +268,7 @@ const HedgingScenarios = () => {
                                     <p>With Hedge: ${formatNumber(hedgedPayouts.neutral)}</p>
                                 </div>
                             </div>
-                            <h2>Stock Trend Simualtion</h2>
+                            <h2 className="second-title">Stock Trend Simualtion</h2>
                             <TrendsChart 
                                 className="trends-chart" 
                                 symbol={symbol.value}
@@ -377,14 +363,6 @@ const HedgingScenarios = () => {
                         step="0.01"
                         value={hedgingRatio}
                         onChange={(e) => setHedgingRatio(e.target.value)}
-                    />
-                    <label>Risk Aversion</label>
-                    <Select
-                        value={riskAversionOptions.find(option => option.value === riskAversion)}
-                        onChange={(option) => setRiskAversion(option.value)}
-                        options={riskAversionOptions}
-                        className="currency-select"
-                        styles={customStyles}
                     />
                     <button onClick={handleCalculateFuture} className='calculate-button'>Calculate</button>
     

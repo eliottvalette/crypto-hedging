@@ -238,8 +238,9 @@ export const calculateBestPayout = (seriesData, type, quantity, spot_entry_price
 
 export function calculateShortHedgeParameters({
     spotEntryPrice,
-    desiredPayout,
+    expectedVariation,
     availableMargin,
+    desiredPayout,
     riskAversion,
     twoWeeksVolume,
 }) {
