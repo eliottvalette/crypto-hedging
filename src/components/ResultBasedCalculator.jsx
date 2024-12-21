@@ -6,11 +6,11 @@ import { customStyles } from '../utils/config';
 
 const ResultBasedShortHedging = () => {
     // Store input values as strings for maximum control
-    const [targetReturn, setTargetReturn] = useState(10);
-    const [targetReturnText, setTargetReturnText] = useState('+10%');
-    const [desiredPayout, setDesiredPayout] = useState('1000');
+    const [expectedVariationText, setExpectedVariationText] = useState('+10%');
+    const [expectedVariation, setExpectedVariation] = useState(10);
     const [availableMargin, setAvailableMargin] = useState('2000');
-    const [riskAversion, setRiskAversion] = useState('medium');
+    const [leverage, setLeverage] = useState('5');
+    const [desiredPayout, setDesiredPayout] = useState('100');
     const [calculatedParams, setCalculatedParams] = useState(null);
     const [hedgingRatio, setHedgingRatio] = useState(50);
 
@@ -21,13 +21,8 @@ const ResultBasedShortHedging = () => {
     const [twoWeeksVolume, setTwoWeeksVolume] = useState(0);
     const [error, setError] = useState('');
     const [payoutScenarios, setPayoutScenarios] = useState({low:null, noChange:null, high:null});
+    const [isUsingLeverage, setIsUsingLeverage] = useState(false);
 
-    // Risk aversion dropdown
-    const riskAversionOptions = [
-        { value: 'low', label: 'Low', hedging: 0.03 },
-        { value: 'medium', label: 'Medium', hedging: 0.25 },
-        { value: 'high', label: 'High', hedging: 0.5 }
-    ];
 
     // Fetch the list of available symbols once
     useEffect(() => {
@@ -44,15 +39,30 @@ const ResultBasedShortHedging = () => {
         fetchSymbols();
     }, []);
 
-    const formatTargetReturn = (value) => {
+    useEffect(() => {
+        async function fetchPrices() {
+            try {
+                const spotPrice = await getSpotPrice(symbol.value, 'binance');
+                setSpotEntryPrice(parseFloat(spotPrice));
+
+                setError('');
+            } catch (error) {
+                console.error('Error fetching prices:', error);
+                setError(error.message);
+            }
+        }
+        fetchPrices();
+    }, [symbol]);
+
+    const formatExpectedVariation = (value) => {
         // tranform ±10% to 10 or -10
         const sign = value[0] === '-' ? -1 : 1;
         return sign * parseFloat(value.slice(1));
     };
 
     useEffect(() => {
-        setTargetReturn(formatTargetReturn(targetReturnText));
-    }, [targetReturnText]);
+        setExpectedVariation(formatExpectedVariation(expectedVariationText));
+    }, [expectedVariationText]);
 
     // Fetch the spot price whenever the symbol changes
     useEffect(() => {
@@ -71,12 +81,13 @@ const ResultBasedShortHedging = () => {
     const handleCalculateHedge = () => {
         setError('');
 
-        const parsedTargetReturn = parseFloat(targetReturn);
+        const parsedexpectedVariation = parseFloat(expectedVariation);
         const parsedDesiredPayout = parseFloat(desiredPayout);
         const parsedAvailableMargin = parseFloat(availableMargin);
+        const parsedLeverage = parseFloat(leverage);
 
         if (
-            isNaN(parsedTargetReturn) ||
+            isNaN(parsedexpectedVariation) ||
             isNaN(parsedDesiredPayout) ||
             isNaN(parsedAvailableMargin) ||
             isNaN(spotEntryPrice)
@@ -86,17 +97,17 @@ const ResultBasedShortHedging = () => {
         }
 
         try {
-            // Extract hedging ratio based on risk aversion
-            const selectedRisk = riskAversionOptions.find(option => option.value === riskAversion);
-            const hedgingRatio = selectedRisk?.hedging || 0.25;
-
             // Calculate parameters for the current spot price
             const params = calculateShortHedgeParameters({
-                spotEntryPrice,
-                desiredPayout: parsedDesiredPayout,
+                spotEntryPrice: spotEntryPrice,
+                expectedVariation: parsedexpectedVariation,
                 availableMargin: parsedAvailableMargin,
-                riskAversion,
-                twoWeeksVolume
+                leverage: parsedLeverage,
+                desiredPayout: parsedDesiredPayout,
+                hedgingRatio : hedgingRatio,
+                twoWeeksVolume : twoWeeksVolume,
+                isUsingLeverage: isUsingLeverage,
+                setError: setError
             });
 
             // Calculate payout scenarios
@@ -146,80 +157,95 @@ const ResultBasedShortHedging = () => {
     };
 
     return (
-        <div className="calculator-container">
-            <h1>Result-Based Short Hedging</h1>
+        <div className="result-based-grid calculator-container">
+            <h1 className='result-based-h1'>Result-Based Short Hedging</h1>
 
             {/* Currency Selection */}
-            <label>Currency</label>
-            <Select
-                value={symbol}
-                onChange={setSymbol}
-                options={availableSymbols}
-                className="currency-select"
-                styles={customStyles}
-            />
+            <div className='result-based-currency'>
+                <label>Currency</label>
+                <Select
+                    value={symbol}
+                    onChange={setSymbol}
+                    options={availableSymbols}
+                    className="currency-select"
+                    styles={customStyles}
+                />
+            </div>
 
-            {/* Available Margin */}
-            <label>Spot Entry Price ($)</label>
-            <input
-                type="number"
-                step="any"
-                placeholder="Available margin"
-                value={availableMargin}
-                onChange={(e) => setAvailableMargin(e.target.value)}
-            />
+            {/* Spot Entry Price */}
+            <div className='result-based-spot-entry' >
+                <label>Spot Entry Price ($)</label>
+                <input
+                    type="number"
+                    step="any"
+                    placeholder="Available margin"
+                    value={spotEntryPrice}
+                    onChange={(e) => setSpotEntryPrice(e.target.value)}
+                />
+            </div>
 
             {/* Target Exit Input */}
-            <label>Exit Target ( % Price Variation ) </label>
-            <input
-                type="text" 
-                placeholder="+10% or -5%"
-                value={targetReturnText}
-                onChange={(e) => setTargetReturnText(e.target.value)}
-            />
+            <div className='result-based-exit-target'>
+                <label>Exit Target ( % Price Variation ) </label>
+                <input
+                    type="text" 
+                    placeholder="+10% or -5%"
+                    value={expectedVariationText}
+                    onChange={(e) => setExpectedVariationText(e.target.value)}
+                />
+            </div>
 
             {/* Available Margin */}
-            <label>Available Margin ($)</label>
-            <input
-                type="number"
-                step="any"
-                placeholder="Available margin"
-                value={availableMargin}
-                onChange={(e) => setAvailableMargin(e.target.value)}
-            />
+            <div className={`result-based-margin ${!isUsingLeverage ? 'used' : 'not-used'}`} onClick={() => setIsUsingLeverage(false)}>
+                <label>Available Margin ($)</label>
+                <input
+                    type="number"
+                    step="any"
+                    placeholder="Available margin"
+                    value={availableMargin}
+                    onChange={(e) => setAvailableMargin(e.target.value)}
+                    onClick={() => setIsUsingLeverage(false)}
+                />
+            </div>
 
-            {/* Available Margin */}
-            <label>Leverage</label>
-            <input
-                type="number"
-                step="any"
-                placeholder="Leverage"
-                value={5}
-                onChange={(e) => setAvailableMargin(e.target.value)}
-            />
+            {/* Leverage */}
+            <div className={`result-based-leverage ${isUsingLeverage ? 'used' : 'not-used'}`} onClick={() => setIsUsingLeverage(true)}>
+                <label>Leverage</label>
+                <input
+                    type="number"
+                    step="any"
+                    placeholder="Leverage"
+                    value={leverage}
+                    onChange={(e) => setLeverage(e.target.value)}
+                />
+            </div>
 
             {/* Desired Payout */}
-            <label>Desired No-fees Payout ($)</label>
-            <input
-                type="number"
-                step="any"
-                placeholder="Desired payout"
-                value={desiredPayout}
-                onChange={(e) => setDesiredPayout(e.target.value)}
-            />
+            <div className='result-based-payout'>
+                <label>Desired No-fees Payout ($)</label>
+                <input
+                    type="number"
+                    step="any"
+                    placeholder="Desired payout"
+                    value={desiredPayout}
+                    onChange={(e) => setDesiredPayout(e.target.value)}
+                />
+            </div>
             
             {/* Hedging Ratio */}
-            <label>Percentage of my position I want covered : {hedgingRatio} %</label>
-            <input
-                type="range"
-                min="0"
-                max="100"
-                step="0.5"
-                value={hedgingRatio}
-                onChange={(e) => setHedgingRatio(e.target.value)}
-            />
+            <div className='result-based-ratio'>
+                <label>Percentage of my position I want covered : {hedgingRatio} %</label>
+                <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    step="0.5"
+                    value={hedgingRatio}
+                    onChange={(e) => setHedgingRatio(e.target.value)}
+                />
+            </div>
 
-            <button onClick={handleCalculateHedge} className='calculate-button'>
+            <button onClick={handleCalculateHedge} className='calculate-button result-based-button'>
                 Calculate Hedge
             </button>
 
@@ -229,7 +255,6 @@ const ResultBasedShortHedging = () => {
                     <h2>Calculated Hedge Parameters</h2>
                     <p>Buy <strong>{calculatedParams.spotQuantity}</strong> {symbol.value} spot (${formatNumber(calculatedParams.spotQuantity * spotEntryPrice)}).</p>
                     <p>Short <strong>{calculatedParams.shortQuantity}</strong> {symbol.value} (${formatNumber(calculatedParams.shortQuantity * spotEntryPrice)}) at <strong>{calculatedParams.leverage}x</strong> leverage.</p>
-                    <p>Required Margin: <strong>${formatNumber(calculatedParams.marginRequired)}</strong></p>
                     <p>Estimated Fees: <strong>${formatNumber(calculatedParams.fees)}</strong></p>
                     {/* Payout Scenarios */}
                     {payoutScenarios && (

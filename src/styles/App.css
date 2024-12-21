@@ -245,6 +245,83 @@ main {
   background: var(--color-light-green);
 }
 
+/* Result Based Grid */
+.result-based-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-auto-rows: minmax(100px, auto);
+  gap: 8px;
+}
+
+.result-based-h1 {
+  grid-column: 1 / -1;
+  grid-row: 1;
+}
+
+.result-based-currency {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.result-based-spot-entry{
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.result-based-exit-target{
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.result-based-margin{
+  grid-column: 1 / 2;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-right: 8px;
+}
+
+.result-based-leverage{
+  grid-column: 2 / 3;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-left: 8px;
+}
+
+.result-based-payout{
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.result-based-ratio{
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.result-based-result-based-button{
+  grid-column: 1 / -1;
+}
+
+/* Used and Not Used */
+.used {
+  opacity: 1;
+}
+
+.not-used {
+  opacity: 0.3;
+}
+
 /* Buttons */
 .buttons-container {
   display: flex;

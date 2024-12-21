@@ -240,26 +240,36 @@ export function calculateShortHedgeParameters({
     spotEntryPrice,
     expectedVariation,
     availableMargin,
+    leverage,
     desiredPayout,
-    riskAversion,
+    hedgingRatio,
     twoWeeksVolume,
+    isUsingLeverage,
+    setError
 }) {
+    console.log({ spotEntryPrice, expectedVariation, availableMargin, desiredPayout, hedgingRatio, twoWeeksVolume });
     const fees = calculateFEE_RATES(twoWeeksVolume);
 
-    // Calculate required quantities based on risk aversion and margin
-    const leverage = riskAversion === 'low' ? 2 : riskAversion === 'medium' ? 5 : 10;
-    const shortQuantity = availableMargin / (spotEntryPrice * leverage);
-    const spotQuantity = desiredPayout / spotEntryPrice;
+    const exitPrice = spotEntryPrice * (1 + expectedVariation / 100);
+    const Q_spot = desiredPayout / (exitPrice - spotEntryPrice);
+    const totalSpotInvestment = Q_spot * spotEntryPrice;
+    const h = hedgingRatio / 100;
 
-    // Calculate fees and margin required
-    const marginRequired = shortQuantity * spotEntryPrice / leverage;
-    const totalFees = shortQuantity * spotEntryPrice * fees.takerFee;
+    if (totalSpotInvestment > availableMargin) {
+        console.error("Insufficient margin for desired payout");
+        setError("Insufficient margin for desired payout");
+        return { spotInvestment: 0, shortPosition: 0, leverage: 0 };
+    }
+
+    const Q_short = Q_spot * h;
+    const totalShortInvestment = Q_short * spotEntryPrice;
+
+    const leverage = totalShortInvestment / availableMargin;
 
     return {
-        spotQuantity,
-        shortQuantity,
-        leverage,
-        marginRequired,
-        fees: totalFees,
+        spotQuantity: formatNumber(totalSpotInvestment),
+        shortQuantity: formatNumber(totalShortInvestment),
+        leverage: formatNumber(leverage),
+        fees: formatNumber(Q_short * spotEntryPrice * fees.takerFee),
     };
 }
