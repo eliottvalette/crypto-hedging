@@ -34,6 +34,14 @@ function Aside() {
                 Hedging Simulation
               </NavLink>
             </li>
+            <li>
+              <NavLink 
+                to="/saved-orders" 
+                className={({ isActive }) => isActive ? 'active-link' : ''}
+              >
+                Saved Orders
+              </NavLink>
+            </li>
           </ul>
         </nav>
       </div>

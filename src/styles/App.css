@@ -687,6 +687,184 @@ main {
   color: var(--color-white);
 }
 
+/* Saved Orders */
+.saved-orders {
+  width: 90%;
+  margin: 2rem auto;
+  background: var(--color-dark-teal);
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  color: var(--color-white);
+}
+
+.saved-orders h2 {
+  text-align: center;
+  font-size: 1.8rem;
+  color: var(--color-teal);
+  margin-bottom: 2rem;
+  font-weight: 600;
+}
+
+.saved-orders table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin-top: 1rem;
+  background: var(--color-dark-green);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.saved-orders th,
+.saved-orders td {
+  padding: 1.2rem;
+  text-align: left;
+  border-bottom: 1px solid rgba(81, 210, 193, 0.1);
+  transition: background-color 0.2s ease;
+}
+
+.saved-orders tr:hover td {
+  background-color: rgba(28, 163, 123, 0.1);
+}
+
+.saved-orders th {
+  background: var(--color-dark-green);
+  font-weight: 600;
+  color: var(--color-teal);
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  letter-spacing: 0.05em;
+}
+
+.saved-orders .entry-price {
+  font-size: 0.9em;
+  color: var(--color-light-gray);
+  opacity: 0.7;
+  margin-top: 0.3rem;
+}
+
+.saved-orders .status-active {
+  color: var(--color-teal);
+  background: rgba(81, 210, 193, 0.1);
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-weight: 500;
+  display: inline-block;
+}
+
+.saved-orders .status-closed {
+  color: var(--color-light-gray);
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-weight: 500;
+  display: inline-block;
+}
+
+.saved-orders .profit,
+.saved-orders .loss {
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  white-space: nowrap; /* Prevent wrapping */
+}
+
+.saved-orders .profit {
+  color: var(--color-light-green);
+}
+
+.saved-orders .loss {
+  color: var(--color-red);
+}
+
+.saved-orders td:nth-child(7) {  /* 7th column is P&L */
+  min-width: 100px;
+  white-space: nowrap;
+}
+
+/* Add action buttons */
+.saved-orders .action-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.saved-orders tr:hover .action-buttons {
+  opacity: 1;
+}
+
+.saved-orders .action-button {
+  padding: 0.4rem 0.8rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: all 0.2s ease;
+}
+
+.saved-orders .action-button:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.saved-orders .close-button {
+  background: var(--color-red);
+  color: var(--color-white);
+}
+
+.saved-orders .edit-button {
+  background: var(--color-teal);
+  color: var(--color-dark-teal);
+}
+
+/* Add hover effects for enabled buttons only */
+.saved-orders .close-button:not(:disabled):hover {
+  background: var(--color-dark-red);
+  transform: translateY(-1px);
+}
+
+.saved-orders .edit-button:not(:disabled):hover {
+  background: var(--color-light-green);
+  transform: translateY(-1px);
+}
+
+/* Responsive design improvements */
+@media (max-width: 1200px) {
+  .saved-orders {
+    width: 95%;
+    padding: 1.5rem;
+  }
+  
+  .saved-orders th,
+  .saved-orders td {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .saved-orders {
+    width: 100%;
+    padding: 1rem;
+    overflow-x: auto;
+  }
+
+  .saved-orders table {
+    font-size: 0.85rem;
+  }
+
+  .saved-orders th,
+  .saved-orders td {
+    padding: 0.8rem;
+  }
+
+  .saved-orders .status-active,
+  .saved-orders .status-closed {
+    padding: 0.3rem 0.6rem;
+    font-size: 0.8rem;
+  }
+}
+
 /* Media Queries for Responsiveness */
 @media (max-width: 1350px){
   .results-container, .results-container h2 {
@@ -724,5 +902,50 @@ main {
   }
   .results-types-container > div {
     max-width: 100%;
+  }
+}
+
+/* Add these styles to your existing saved-orders styles */
+
+.saved-orders .filter-buttons {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  justify-content: center;
+}
+
+.saved-orders .filter-button {
+  padding: 0.6rem 1.2rem;
+  border: 2px solid var(--color-teal);
+  border-radius: 25px;
+  background: transparent;
+  color: var(--color-light-gray);
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.saved-orders .filter-button:hover {
+  background: rgba(81, 210, 193, 0.1);
+  color: var(--color-teal);
+}
+
+.saved-orders .filter-button.active {
+  background: var(--color-teal);
+  color: var(--color-dark-teal);
+  border-color: var(--color-teal);
+}
+
+/* Update responsive styles */
+@media (max-width: 768px) {
+  .saved-orders .filter-buttons {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  
+  .saved-orders .filter-button {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
   }
 }

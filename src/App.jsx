@@ -5,6 +5,7 @@ import ResultBasedCalculator from './components/HedgingScenarios';
 import HedgingCalculator from './components/ResultBasedCalculator';
 import Header from './components/Header';
 import Auth from './components/Auth';
+import SavedOrders from './components/SavedOrders';
 import { UserProvider } from './components/UserContext';
 
 function App() {
@@ -19,6 +20,7 @@ function App() {
             <Route path="/hedging-calculator" element={<HedgingCalculator />} />
             <Route path="/hedging-result-based" element={<ResultBasedCalculator />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/saved-orders" element={<SavedOrders />} />
           </Routes>
         </main>
       </div>
