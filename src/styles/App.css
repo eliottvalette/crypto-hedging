@@ -8,11 +8,12 @@
   --color-dark-teal: #131E22;
   --color-red: #E76D85;
   --color-dark-red: #35272F;
+  font-family: 'Inter', sans-serif !important
 }
 
 /* General Reset and Base Styling */
 body, html {
-  font-family: 'Raleway', sans-serif;
+  font-family: 'Inter', sans-serif;
   margin: 0;
   padding: 0;
   min-height: 100vh;
@@ -78,7 +79,7 @@ aside {
 
 .aside-top h1 {
   font-size: 2rem;
-  font-weight: bold;
+  font-weight: 600;
   color: var(--color-teal);
 }
 
@@ -485,7 +486,6 @@ main {
   background: var(--color-dark-green); /* Fixed background property */
   color: var(--color-white);
   font-size: 1rem;
-  font-family: 'Roboto', Arial, sans-serif;
   transition: background 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
   box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
 }

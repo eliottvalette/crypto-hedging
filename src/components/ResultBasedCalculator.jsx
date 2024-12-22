@@ -21,7 +21,7 @@ const ResultBasedShortHedging = () => {
     const [twoWeeksVolume, setTwoWeeksVolume] = useState(0);
     const [error, setError] = useState('');
     const [payoutScenarios, setPayoutScenarios] = useState({low:null, noChange:null, high:null});
-    const [isUsingLeverage, setIsUsingLeverage] = useState(false);
+    const [isLeverageRegistred, setIsLeverageRegistred] = useState(false);
 
     // Fetch the list of available symbols once
     useEffect(() => {
@@ -105,7 +105,7 @@ const ResultBasedShortHedging = () => {
                 desiredPayout: parsedDesiredPayout,
                 hedgingRatio : hedgingRatio,
                 twoWeeksVolume : twoWeeksVolume,
-                isUsingLeverage: isUsingLeverage,
+                isLeverageRegistred: isLeverageRegistred,
                 setError: setError
             });
 
@@ -195,7 +195,7 @@ const ResultBasedShortHedging = () => {
             </div>
 
             {/* Available Margin */}
-            <div className={`result-based-margin ${!isUsingLeverage ? 'used' : 'not-used'}`} onClick={() => setIsUsingLeverage(false)}>
+            <div className={`result-based-margin ${!isLeverageRegistred ? 'used' : 'not-used'}`} onClick={() => setIsLeverageRegistred(false)}>
                 <label>Available Margin ($)</label>
                 <input
                     type="number"
@@ -203,12 +203,12 @@ const ResultBasedShortHedging = () => {
                     placeholder="Available margin"
                     value={availableMargin}
                     onChange={(e) => setAvailableMargin(e.target.value)}
-                    onClick={() => setIsUsingLeverage(false)}
+                    onClick={() => setIsLeverageRegistred(false)}
                 />
             </div>
 
             {/* Leverage */}
-            <div className={`result-based-leverage ${isUsingLeverage ? 'used' : 'not-used'}`} onClick={() => setIsUsingLeverage(true)}>
+            <div className={`result-based-leverage ${isLeverageRegistred ? 'used' : 'not-used'}`} onClick={() => setIsLeverageRegistred(true)}>
                 <label>Leverage</label>
                 <input
                     type="number"
@@ -255,7 +255,7 @@ const ResultBasedShortHedging = () => {
                     <p>Buy <strong>{calculatedParams.spotQuantity}</strong> {symbol.value} spot (${formatNumber(calculatedParams.spotQuantity * spotEntryPrice)}).</p>
                     <p>Short <strong>{calculatedParams.shortQuantity}</strong> {symbol.value} (${formatNumber(calculatedParams.shortQuantity * spotEntryPrice)}) at <strong>{calculatedParams.leverage}x</strong> leverage.</p>
                     <p>Estimated Fees: <strong>${formatNumber(calculatedParams.fees)}</strong></p>
-                    {isUsingLeverage && <p>Required Margin : <strong>${formatNumber(calculatedParams.requiredMargin)}</strong></p>}
+                    {isLeverageRegistred && <p>Required Margin : <strong>${formatNumber(calculatedParams.requiredMargin)}</strong></p>}
                     {/* Payout Scenarios */}
                     {payoutScenarios && (
                         <>

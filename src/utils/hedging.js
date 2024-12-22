@@ -68,12 +68,12 @@ export function calculatePayoutFuture(quantity, spotEntryPrice, futuresEntryPric
     }
 
     // Long futures
-    const Q_long = Q * (1 - h / 2);
+    const Q_long = Q ;
     const totalInvestedLong = Q_long * futuresEntryPrice;
     const longFees = calculateFees(Q, futuresEntryPrice, fees.takerFee);
 
     // Hedged futures
-    const Q_short = Q * h / 2;
+    const Q_short = Q * h ;
     const totalInvestedFuture = Q_short * futuresEntryPrice;
     const shortFees = calculateFees(Q_short, futuresEntryPrice, fees.takerFee);
 
@@ -101,11 +101,11 @@ export function calculatePayoutFutureDelay(quantity, spotEntryPrice, futuresEntr
     }
 
     // Long futures
-    const Q_long = Q * (1 - hedgingRatioFloat / 2);
+    const Q_long = Q;
     const spotPayout = Q_long * (longExitPrice - futuresEntryPrice) - Q * futuresEntryPrice * fees.takerFee;
 
     // Hedged futures
-    const Q_short = Q * hedgingRatioFloat / 2;
+    const Q_short = Q * hedgingRatioFloat;
     const shortPayout = Q_short * (futuresEntryPrice - futureExitPrice) - Q_short * futuresEntryPrice * fees.takerFee;
 
     // Combined payout
@@ -132,12 +132,12 @@ export function calculatePayoutShort(quantity, spotEntryPrice, spotExitPrice, he
     }
 
     // Long position details
-    const Q_long = Q * (1 - h / 2);
+    const Q_long = Q;
     const totalInvestedLong = Q_long * P_spot_achat;
     const P_L_long = Q_long * (P_spot_vente - P_spot_achat);
 
     // Short position details
-    const Q_short = Q * h / 2; // Shorted quantity based on hedging ratio
+    const Q_short = Q * h; // Shorted quantity based on hedging ratio
     const totalInvestedShort = Q_short * P_spot_achat;
     const P_L_short = Q_short * (P_spot_achat - P_spot_vente); // Short position P&L
 
@@ -167,10 +167,10 @@ export function calculatePayoutShort(quantity, spotEntryPrice, spotExitPrice, he
 export function calculatePayoutShortDelay(Q, P_spot_achat, LongClose, ShortClose, h, twoWeeksVolume) {    
     const fees = calculateFEE_RATES(twoWeeksVolume);
 
-    const Q_long = Q * (1 - h / 2);
+    const Q_long = Q;
     const P_L_long = Q_long * (LongClose - P_spot_achat);
 
-    const Q_short = Q * h / 2;
+    const Q_short = Q * h ;
     const P_L_short = Q_short * (P_spot_achat - ShortClose);
 
     const Frais_long = Q * P_spot_achat * fees.takerFee; // Fees for the long position
@@ -244,63 +244,64 @@ export function calculateShortHedgeParameters({
     desiredPayout,
     hedgingRatio,
     twoWeeksVolume,
-    isUsingLeverage,
+    isLeverageRegistred,
     setError
 }) {
-    console.log({
-        spotEntryPrice,
-        expectedVariation,
-        availableMargin,
-        desiredPayout,
-        hedgingRatio,
-        twoWeeksVolume,
-        isUsingLeverage
-    });
-
+    // Convert inputs to floats
+    spotEntryPrice = parseFloat(spotEntryPrice) || 1;
+    expectedVariation = parseFloat(expectedVariation) || 1;
+    availableMargin = parseFloat(availableMargin) || 0;
+    leverage = parseFloat(leverage) || 1;
+    desiredPayout = parseFloat(desiredPayout) || 0;
+    hedgingRatio = parseFloat(hedgingRatio) || 0.03;
+    
     const fees = calculateFEE_RATES(twoWeeksVolume);
 
-    const exitPrice = spotEntryPrice * (1 + expectedVariation / 100);
-    const Q_spot = desiredPayout / (exitPrice - spotEntryPrice);
-    const totalSpotInvestment = Q_spot * spotEntryPrice;
-    const h = hedgingRatio / 100;
+    // Calculate spot quantity based on desired payout and spot entry price
+    const Q_spot = desiredPayout / spotEntryPrice;
 
-    // Logic when isUsingLeverage is false (default mode)
-    if (!isUsingLeverage) {
-        if (totalSpotInvestment > availableMargin) {
-            console.error("Insufficient margin for desired payout");
-            setError("Insufficient margin for desired payout");
-            return { spotInvestment: 0, shortPosition: 0, leverage: 0 };
-        }
+    // Calculate short quantity based on hedging ratio
+    const Q_short = Q_spot * hedgingRatio;
 
-        const Q_short = Q_spot;
-        const totalShortInvestment = Q_short * spotEntryPrice;
-        const calculatedLeverage = totalShortInvestment / availableMargin;
+    let shortFees = 0;
+    let requiredMargin = 0;
 
-        return {
-            spotQuantity: formatNumber(Q_spot),
-            shortQuantity: formatNumber(Q_short),
-            leverage: formatNumber(calculatedLeverage),
-            fees: formatNumber(Q_short * spotEntryPrice * fees.takerFee)
-        };
+    if (isLeverageRegistred) {
+        // Calculate short position using leverage
+        const totalInvestedLong = Q_spot * spotEntryPrice;
+        const totalInvestedShort = totalInvestedLong / leverage;
+        const P_spot_achat = Q_spot;
+        const P_spot_vente = P_spot_achat * (1 + (expectedVariation / 100));
+
+        // Calculate short fees
+        shortFees = calculateFees(Q_short, P_spot_achat, fees.takerFee);
+
+        // Calculate required margin for leverage
+        requiredMargin = totalInvestedLong + totalInvestedShort - P_spot_achat;
+
+    } else {
+        // Calculate short position using available margin
+        const P_spot_achat = Q_spot;
+        const P_spot_vente = P_spot_achat * (1 + (expectedVariation / 100));
+
+        // Calculate short fees
+        shortFees = calculateFees(Q_short, P_spot_achat, fees.takerFee);
+
+        // Ensure required margin does not exceed available margin
+        requiredMargin = Math.min(availableMargin, Q_short * spotEntryPrice);
     }
 
-    // Logic when isUsingLeverage is true
-    if (isUsingLeverage) {
-        const Q_short = desiredPayout / (exitPrice - spotEntryPrice) * h;
-        const totalShortInvestment = Q_short * spotEntryPrice;
-        const calculatedAvailableMargin = totalShortInvestment / leverage;
+    // Calculate net payout considering short position's potential loss
+    const Short_PnL = Q_short * (expectedVariation / 100) * spotEntryPrice;
+    const netPayout = desiredPayout - Short_PnL;
 
-        return {
-            spotQuantity: formatNumber(Q_spot),
-            shortQuantity: formatNumber(Q_short),
-            leverage: formatNumber(leverage),
-            fees: formatNumber(Q_short * spotEntryPrice * fees.takerFee),
-            requiredMargin: formatNumber(calculatedAvailableMargin)
-        };
-    }
-
-    // Default return in case of unexpected inputs
-    console.error("Unexpected error in hedge parameter calculation");
-    setError("Unexpected error in hedge parameter calculation");
-    return { spotInvestment: 0, shortPosition: 0, leverage: 0 };
+    // Return calculated parameters
+    return {
+        spotQuantity: Q_spot,
+        shortQuantity: Q_short,
+        leverage: isLeverageRegistred ? leverage : null,
+        fees: formatNumber(shortFees),
+        requiredMargin: formatNumber(requiredMargin),
+        netPayout: formatNumber(netPayout)
+    };
 }

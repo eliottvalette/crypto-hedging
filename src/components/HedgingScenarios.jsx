@@ -14,7 +14,6 @@ const HedgingScenarios = () => {
     const [spotEntryPrice, setSpotEntryPrice] = useState(0);
     const [futuresEntryPrice, setFuturesEntryPrice] = useState(0);
     const [hedgingRatio, setHedgingRatio] = useState(0.5);
-    const [platform, setPlatform] = useState('Binance');
     const [availableSymbols, setAvailableSymbols] = useState([]);
     const [spotPayouts, setSpotPayouts] = useState({ up: null, down: null, neutral: null });
     const [hedgedPayouts, setHedgedPayouts] = useState({ up: null, down: null, neutral: null });
@@ -26,7 +25,6 @@ const HedgingScenarios = () => {
     const [totalInvestedShort, setTotalInvestedShort] = useState(0);
     const [totalInvestedFuture, setTotalInvestedFuture] = useState(0);
     const [twoWeeksVolume, setTwoWeeksVolume] = useState(0);
-    const [riskAversion, setRiskAversion] = useState('medium');
     const [activeScenario, setActiveScenario] = useState('up');
     const [adjustedPayout, setAdjustedPayout] = useState(null);
     const [originalClosePrice, setOriginalClosePrice] = useState(null);
@@ -53,15 +51,17 @@ const HedgingScenarios = () => {
     useEffect(() => {
         async function fetchPrices() {
             try {
-                const spotPrice = await getSpotPrice(symbol.value, platform);
-                setSpotEntryPrice(parseFloat(spotPrice));
-
-                const futuresPrice = await getFuturesPrice(symbol.value, platform);
-                if (futuresPrice === null || futuresPrice === undefined) {
-                    throw new Error('Futures not available for the selected currency.');
+                if (hedgeType === 'spot') {
+                    const spotPrice = await getSpotPrice(symbol.value);
+                    setSpotEntryPrice(parseFloat(spotPrice));
+                    setError('');
+                } else {
+                    const futuresPrice = await getFuturesPrice(symbol.value, setError);
+                    if (futuresPrice === null || futuresPrice === undefined) {
+                        throw new Error('Futures not available for the selected currency.');
+                    }
+                    setFuturesEntryPrice(parseFloat(futuresPrice));
                 }
-                setFuturesEntryPrice(parseFloat(futuresPrice));
-                setError('');
             } catch (error) {
                 console.error('Error fetching prices:', error);
                 setError(error.message);
@@ -69,7 +69,7 @@ const HedgingScenarios = () => {
             }
         }
         fetchPrices();
-    }, [symbol, platform]);
+    }, [symbol]);
 
     const handleCalculateFuture = () => {
         if (error) {
