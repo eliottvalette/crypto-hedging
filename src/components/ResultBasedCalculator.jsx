@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import Select from 'react-select';
-import { calculateShortHedgeParameters, calculatePayoutShortDelay } from '../utils/hedging';
+import { calculateShortHedgeParameters, calculateUsingParams } from '../utils/hedging';
 import { getSpotPrice, getAvailableSymbols } from '../utils/data';
 import { customStyles } from '../utils/config';
+import TrendsChart from './TrendsChart';
+import { generateNewTrend } from '../utils/trends';
 
 const ResultBasedShortHedging = () => {
     // Store input values as strings for maximum control
@@ -22,6 +24,11 @@ const ResultBasedShortHedging = () => {
     const [error, setError] = useState('');
     const [payoutScenarios, setPayoutScenarios] = useState({low:null, noChange:null, high:null});
     const [isLeverageRegistred, setIsLeverageRegistred] = useState(false);
+    const [trend, setTrend] = useState('upTrend');
+    const [adjustedPayout, setAdjustedPayout] = useState(null);
+    const [originalClosePrice, setOriginalClosePrice] = useState(null);
+    const [hedgeClosePrice, setHedgeClosePrice] = useState(null);
+    const [bestPayout, setBestPayout] = useState({ bestSpotPayout: 0, bestHedgedPayout: 0 });
 
     // Fetch the list of available symbols once
     useEffect(() => {
@@ -103,44 +110,50 @@ const ResultBasedShortHedging = () => {
                 availableMargin: parsedAvailableMargin,
                 leverage: parsedLeverage,
                 desiredPayout: parsedDesiredPayout,
-                hedgingRatio : hedgingRatio,
-                twoWeeksVolume : twoWeeksVolume,
+                hedgingRatio: hedgingRatio,
+                twoWeeksVolume: twoWeeksVolume,
                 isLeverageRegistred: isLeverageRegistred,
                 setError: setError
             });
 
             // Calculate payout scenarios
-            const downScenario = calculatePayoutShortDelay(
+            const downScenario = calculateUsingParams(
                 params.spotQuantity,
-                spotEntryPrice,
-                spotEntryPrice * 0.9,
-                spotEntryPrice,
-                hedgingRatio,
-                twoWeeksVolume
+                params.shortQuantity,
+                params.leverage,
+                params.fees,
+                params.requiredMargin,
+                -10,
+                twoWeeksVolume,
+                spotEntryPrice
             );
 
-            const noChangeScenario = calculatePayoutShortDelay(
+            const noChangeScenario = calculateUsingParams(
                 params.spotQuantity,
-                spotEntryPrice,
-                spotEntryPrice,
-                spotEntryPrice,
-                hedgingRatio,
-                twoWeeksVolume
+                params.shortQuantity,
+                params.leverage,
+                params.fees,
+                params.requiredMargin,
+                0,
+                twoWeeksVolume,
+                spotEntryPrice
             );
 
-            const upScenario = calculatePayoutShortDelay(
+            const upScenario = calculateUsingParams(
                 params.spotQuantity,
-                spotEntryPrice,
-                spotEntryPrice * 1.1,
-                spotEntryPrice,
-                hedgingRatio,
-                twoWeeksVolume
+                params.shortQuantity,
+                params.leverage,
+                params.fees,
+                params.requiredMargin,
+                10,
+                twoWeeksVolume,
+                spotEntryPrice
             );
 
             setPayoutScenarios({
-                low: formatNumber(downScenario.hedgedPayout),
-                noChange: formatNumber(noChangeScenario.hedgedPayout),
-                high: formatNumber(upScenario.hedgedPayout)
+                low: downScenario.hedgedPayout,
+                noChange: noChangeScenario.hedgedPayout,
+                high: upScenario.hedgedPayout
             });
 
             setCalculatedParams(params);
@@ -151,8 +164,13 @@ const ResultBasedShortHedging = () => {
     };
     
     const formatNumber = (number) => {
-        if (number < 0.01 && number > 0) return number.toExponential(2); // Use scientific notation for small values
-        return parseFloat(number).toFixed(2); // Round to 2 decimal places for other cases
+        if (number < 0.01 && number > 0) return number.toExponential(2);
+        return parseFloat(number).toFixed(3);
+    };
+
+    const formatPreciseNumber = (number) => {
+        if (number < 0.001 && number > 0) return number.toExponential(2);
+        return parseFloat(number).toFixed(6);
     };
 
     return (
@@ -268,8 +286,8 @@ const ResultBasedShortHedging = () => {
             {calculatedParams && (
                 <div className="results-container">
                     <h2>Calculated Hedge Parameters</h2>
-                    <p>Buy <strong>{calculatedParams.spotQuantity}</strong> {symbol.value} spot (${formatNumber(calculatedParams.spotQuantity * spotEntryPrice)}).</p>
-                    <p>Short <strong>{calculatedParams.shortQuantity}</strong> {symbol.value} (${formatNumber(calculatedParams.shortQuantity * spotEntryPrice)}) at <strong>{calculatedParams.leverage}x</strong> leverage.</p>
+                    <p>Buy <strong>{formatPreciseNumber(calculatedParams.spotQuantity)}</strong> {symbol.value} spot (${formatNumber(calculatedParams.spotQuantity * spotEntryPrice)}).</p>
+                    <p>Short <strong>{formatPreciseNumber(calculatedParams.shortQuantity)}</strong> {symbol.value} (${formatNumber(calculatedParams.shortQuantity * spotEntryPrice)}) at <strong>{calculatedParams.leverage.toFixed(4)}x</strong> leverage.</p>
                     <p>Estimated Fees: <strong>${formatNumber(calculatedParams.fees)}</strong></p>
                     {isLeverageRegistred && <p>Required Margin : <strong>${formatNumber(calculatedParams.requiredMargin)}</strong></p>}
                     {/* Payout Scenarios */}
@@ -280,11 +298,47 @@ const ResultBasedShortHedging = () => {
                             <p>No change scenario (0%) : <strong>${formatNumber(payoutScenarios.noChange)}</strong></p>
                             <p>Up scenario (+10%) : <strong>${formatNumber(payoutScenarios.high)}</strong></p>
                         </>
-                        
+                    )}
+                    
+                    {/* Add TrendsChart */}
+                    <h2 className="second-title">Stock Trend Simulation</h2>
+                    <TrendsChart 
+                        className="trends-chart" 
+                        symbol={symbol.value}
+                        trend={trend} 
+                        quantity={parseFloat(calculatedParams.spotQuantity)} 
+                        hedgingRatio={hedgingRatio} 
+                        type="result-based" 
+                        spotEntryPrice={spotEntryPrice}
+                        futuresEntryPrice={spotEntryPrice}
+                        generateNewTrend={generateNewTrend}
+                        setAdjustedPayout={setAdjustedPayout}
+                        setOriginalClosePrice={setOriginalClosePrice}
+                        setHedgeClosePrice={setHedgeClosePrice}
+                        setBestPayout={setBestPayout}
+                        params={calculatedParams}
+                    />
+                    {adjustedPayout ? (
+                        <div className="adjusted-payout">
+                            <h3>Adjusted Payout Calculation</h3>
+                            <p>Long Close Price: ${formatNumber(originalClosePrice)}</p>
+                            <p>Hedge Close Price: ${formatNumber(hedgeClosePrice)}</p>
+                            <h4>If you had closed those positions, your final payout would have been: <br/>${formatNumber(adjustedPayout)}</h4>
+                            <h3>Best Possible payouts</h3>
+                            <p>Best Spot Payout: ${formatNumber(bestPayout.bestSpotPayout)}</p>
+                            <p>Best Hedged Payout: ${formatNumber(bestPayout.bestHedgedPayout)}</p>
+                        </div>
+                    ) : (
+                        <div className="adjusted-payout">
+                            <h3>Adjusted Payout Calculation</h3>
+                            <h4><i>(Click the chart to set or update the selected position's close price.)</i></h4>
+                            <h3>Best Possible payouts</h3>
+                            <p>Best Spot Payout: ${formatNumber(bestPayout.bestSpotPayout)}</p>
+                            <p>Best Hedged Payout: ${formatNumber(bestPayout.bestHedgedPayout)}</p>
+                        </div>
                     )}
                 </div>
             )}
-
 
             {/* Error Message */}
             {error && <div className="error-message">⚠️ {error}</div>}

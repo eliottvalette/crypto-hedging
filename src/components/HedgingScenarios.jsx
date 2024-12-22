@@ -372,28 +372,28 @@ const HedgingScenarios = () => {
                         onBlur={() => setFuturesEntryPrice(Number(futuresEntryPrice.toFixed(2)))} // Reapply formatting
                     />
                     <label>Hedging Ratio (h): 
-                    <input
-                        type="number"
-                        min="0"
-                        max="1"
-                        step="0.01"
-                        value={hedgingRatio}
-                        onChange={(e) => {
-                            const value = parseFloat(e.target.value);
-                            if (!isNaN(value) && value >= 0 && value <= 1) {
-                                setHedgingRatio(value);
-                            }
-                        }}
-                        className='nested-input'
-                    /></label>
-                    <input
-                        type="range"
-                        min="0"
-                        max="1"
-                        step="0.01"
-                        value={hedgingRatio}
-                        onChange={(e) => setHedgingRatio(parseFloat(e.target.value))}
-                    />
+                        <input
+                            type="number"
+                            min="0"
+                            max="1"
+                            step="0.01"
+                            value={hedgingRatio}
+                            onChange={(e) => {
+                                const value = parseFloat(e.target.value);
+                                if (!isNaN(value) && value >= 0 && value <= 1) {
+                                    setHedgingRatio(value);
+                                }
+                            }}
+                            className='nested-input'
+                        /></label>
+                        <input
+                            type="range"
+                            min="0"
+                            max="1"
+                            step="0.01"
+                            value={hedgingRatio}
+                            onChange={(e) => setHedgingRatio(parseFloat(e.target.value))}
+                        />
                     <button onClick={handleCalculateFuture} className='calculate-button'>Calculate</button>
     
                     {spotPayouts.up !== null && (

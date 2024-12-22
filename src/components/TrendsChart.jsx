@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import Chart from 'react-apexcharts';
 import { savedTrends } from '../utils/trends';
-import { calculatePayoutFuture, calculatePayoutShort, calculateBestPayout, calculatePayoutShortDelay, calculatePayoutFutureDelay } from '../utils/hedging';
+import { calculatePayoutFuture, calculatePayoutShort, calculateBestPayout, calculatePayoutShortDelay, calculatePayoutFutureDelay, calculateUsingParams, calculateUsingParamsDelay } from '../utils/hedging';
 import { useState, useEffect } from 'react';
 import { FaRedo } from 'react-icons/fa';
 import 'apexcharts/dist/apexcharts.css';
@@ -11,7 +11,6 @@ const TrendsChart = ({
   quantity,
   hedgingRatio,
   type,
-  marginRate,
   spotEntryPrice,
   futuresEntryPrice,
   generateNewTrend,
@@ -19,6 +18,8 @@ const TrendsChart = ({
   setOriginalClosePrice,
   setHedgeClosePrice,
   setBestPayout,
+  tunnelSize = 5,
+  params={},
 }) => {
   const [twoWeeksVolume, setTwoWeeksVolume] = useState(0);
   const [seriesData, setSeriesData] = useState(savedTrends[trend]);
@@ -75,7 +76,7 @@ const TrendsChart = ({
     let spotPayout = 0;
     let hedgedPayout = 0;
 
-    if (type === 'spot') {
+    if (type === 'spot' ) {
       ({ spotPayout, hedgedPayout } = calculatePayoutShort(
         quantity,
         spot_entry_price,
@@ -83,7 +84,7 @@ const TrendsChart = ({
         hedgingRatio,
         twoWeeksVolume
       ));
-    } else {
+    } else if (type === 'future') {
       ({ spotPayout, hedgedPayout } = calculatePayoutFuture(
         quantity,
         spot_entry_price,
@@ -91,6 +92,20 @@ const TrendsChart = ({
         parseFloat(close),
         hedgingRatio,
         twoWeeksVolume
+      ));
+    } else if (type === 'result-based') {
+      // Calculate price variation percentage from entry to current price
+      const priceVariation = ((parseFloat(close) - spot_entry_price) / spot_entry_price) * 100;
+      
+      ({ spotPayout, hedgedPayout } = calculateUsingParams(
+        params.spotQuantity,
+        params.shortQuantity,
+        params.leverage,
+        params.fees,
+        params.requiredMargin,
+        priceVariation,
+        twoWeeksVolume,
+        spot_entry_price
       ));
     }
 
@@ -182,7 +197,41 @@ const TrendsChart = ({
         },
       },
     },
-    annotations: annotations,
+    annotations: {
+      ...annotations,
+      yaxis: [
+        {
+          y: spot_entry_price * (1 + tunnelSize/100),
+          borderColor: 'var(--color-light-green)',
+          strokeDashArray: 0,
+          strokeWidth: 40,
+          label: {
+            borderColor: 'var(--color-light-green)',
+            style: {
+              color: 'var(--color-dark-teal)',
+              background: 'var(--color-light-green)',
+            },
+            text: `+${tunnelSize}%`,
+            position: 'left',
+          },
+        },
+        {
+          y: spot_entry_price * (1 - tunnelSize/100),
+          borderColor: 'var(--color-red)',
+          strokeDashArray: 0,
+          strokeWidth: 40,
+          label: {
+            borderColor: 'var(--color-red)',
+            style: {
+              color: 'var(--color-dark-teal)',
+              background: 'var(--color-red)',
+            },
+            text: `-${tunnelSize}%`,
+            position: 'left',
+          },
+        }
+      ],
+    },
     title: {
       text: 'Price Movement',
       align: 'left',
@@ -236,15 +285,45 @@ const TrendsChart = ({
 
   useEffect(() => {
     if (originalClosePriceTemp !== null && hedgeClosePriceTemp !== null) {
-      const payout = type === 'spot'
-        ? calculatePayoutShortDelay(quantity, spot_entry_price, originalClosePriceTemp, hedgeClosePriceTemp, hedgingRatio, twoWeeksVolume).hedgedPayout
-        : calculatePayoutFutureDelay(quantity, spot_entry_price, futures_entry_price, originalClosePriceTemp, hedgeClosePriceTemp, hedgingRatio, twoWeeksVolume).hedgedPayout;
+      let payout;
+      if (type === 'future') {
+        payout = calculatePayoutFutureDelay(
+          quantity, 
+          spot_entry_price, 
+          futures_entry_price, 
+          originalClosePriceTemp, 
+          hedgeClosePriceTemp, 
+          hedgingRatio, 
+          twoWeeksVolume
+        ).hedgedPayout;
+      } else if (type === 'result-based') {
+        payout = calculateUsingParamsDelay(
+          params.spotQuantity,
+          params.shortQuantity,
+          params.leverage,
+          params.fees,
+          params.requiredMargin,
+          originalClosePriceTemp,
+          hedgeClosePriceTemp,
+          twoWeeksVolume,
+          spot_entry_price
+        ).hedgedPayout;
+      } else {
+        payout = calculatePayoutShortDelay(
+          quantity, 
+          spot_entry_price, 
+          originalClosePriceTemp, 
+          hedgeClosePriceTemp, 
+          hedgingRatio, 
+          twoWeeksVolume
+        ).hedgedPayout;
+      }
       
       setAdjustedPayout(payout);
       setOriginalClosePrice(originalClosePriceTemp);
       setHedgeClosePrice(hedgeClosePriceTemp);
     }
-  }, [quantity, spot_entry_price, originalClosePriceTemp, hedgeClosePriceTemp, hedgingRatio, twoWeeksVolume]);
+  }, [quantity, spot_entry_price, originalClosePriceTemp, hedgeClosePriceTemp, hedgingRatio, twoWeeksVolume, type, params]);
 
   return (
     <div id="chart">
@@ -286,7 +365,7 @@ TrendsChart.propTypes = {
   trend: PropTypes.string.isRequired,
   quantity: PropTypes.number.isRequired,
   hedgingRatio: PropTypes.number.isRequired,
-  type: PropTypes.string.isRequired,
+  type: PropTypes.oneOf(['spot', 'future', 'result-based']).isRequired,
   symbol: PropTypes.string.isRequired,
   marginRate: PropTypes.number,
   spotEntryPrice: PropTypes.number.isRequired,
@@ -296,6 +375,14 @@ TrendsChart.propTypes = {
   setOriginalClosePrice: PropTypes.func.isRequired,
   setHedgeClosePrice: PropTypes.func.isRequired,
   setBestPayout: PropTypes.func.isRequired,
+  tunnelSize: PropTypes.number,
+  params: PropTypes.shape({
+    spotQuantity: PropTypes.number,
+    shortQuantity: PropTypes.number,
+    leverage: PropTypes.number,
+    fees: PropTypes.number,
+    requiredMargin: PropTypes.number
+  })
 };
 
 export default TrendsChart;

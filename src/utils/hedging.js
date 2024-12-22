@@ -42,7 +42,7 @@ function calculateFEE_RATES(twoWeeksVolume) {
 }
 
 function formatNumber(number) {
-    return number.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    return number.toLocaleString('en-US', { minimumFractionDigits: 2});
 }
 
 function calculateFees(quantity, entryPrice, feeRate) {
@@ -186,7 +186,7 @@ export function calculatePayoutShortDelay(Q, P_spot_achat, LongClose, ShortClose
     };
 }
 
-export const calculateBestPayout = (seriesData, type, quantity, spot_entry_price, futures_entry_price, hedgingRatio, twoWeeksVolume) => {
+export const calculateBestPayout = (seriesData, type, quantity, spot_entry_price, futures_entry_price, hedgingRatio, twoWeeksVolume, params={}) => {
     if (!seriesData || seriesData.length === 0) {
         console.error("Empty or invalid seriesData");
         return { bestSpotPayout: 0, bestHedgedPayout: 0 };
@@ -228,6 +228,17 @@ export const calculateBestPayout = (seriesData, type, quantity, spot_entry_price
             hedgingRatio,
             twoWeeksVolume
         ));
+    } else if (type === 'result-based') {
+        ({ spotPayout: bestSpotPayout, hedgedPayout: bestHedgedPayout } = calculateUsingParams(
+            Q,
+            Q * (hedgingRatio / 100),
+            params.leverage,
+            params.fees,
+            params.requiredMargin,
+            params.priceVariation,
+            twoWeeksVolume,
+            spot_entry_price
+        ));
     }
 
     return {
@@ -247,61 +258,149 @@ export function calculateShortHedgeParameters({
     isLeverageRegistred,
     setError
 }) {
-    // Convert inputs to floats
-    spotEntryPrice = parseFloat(spotEntryPrice) || 1;
-    expectedVariation = parseFloat(expectedVariation) || 1;
-    availableMargin = parseFloat(availableMargin) || 0;
-    leverage = parseFloat(leverage) || 1;
-    desiredPayout = parseFloat(desiredPayout) || 0;
-    hedgingRatio = parseFloat(hedgingRatio) || 0.03;
-    
-    const fees = calculateFEE_RATES(twoWeeksVolume);
+    // Convert inputs to floats and validate
+    spotEntryPrice = parseFloat(spotEntryPrice);
+    expectedVariation = parseFloat(expectedVariation);
+    availableMargin = parseFloat(availableMargin);
+    leverage = parseFloat(leverage);
+    desiredPayout = parseFloat(desiredPayout);
+    hedgingRatio = parseFloat(hedgingRatio / 100);
 
-    // Calculate spot quantity based on desired payout and spot entry price
-    const Q_spot = desiredPayout / spotEntryPrice;
+    // Ensure hedging ratio is within valid bounds
+    if (hedgingRatio < 1e-3) {
+        hedgingRatio = 1e-3;
+      } else if (hedgingRatio > 1 - 1e-3) {
+        hedgingRatio = 1 - 1e-3;
+      }
+      
 
-    // Calculate short quantity based on hedging ratio
-    const Q_short = Q_spot * hedgingRatio;
-
-    let shortFees = 0;
-    let requiredMargin = 0;
-
-    if (isLeverageRegistred) {
-        // Calculate short position using leverage
-        const totalInvestedLong = Q_spot * spotEntryPrice;
-        const totalInvestedShort = totalInvestedLong / leverage;
-        const P_spot_achat = Q_spot;
-        const P_spot_vente = P_spot_achat * (1 + (expectedVariation / 100));
-
-        // Calculate short fees
-        shortFees = calculateFees(Q_short, P_spot_achat, fees.takerFee);
-
-        // Calculate required margin for leverage
-        requiredMargin = totalInvestedLong + totalInvestedShort - P_spot_achat;
-
-    } else {
-        // Calculate short position using available margin
-        const P_spot_achat = Q_spot;
-        const P_spot_vente = P_spot_achat * (1 + (expectedVariation / 100));
-
-        // Calculate short fees
-        shortFees = calculateFees(Q_short, P_spot_achat, fees.takerFee);
-
-        // Ensure required margin does not exceed available margin
-        requiredMargin = Math.min(availableMargin, Q_short * spotEntryPrice);
+    if (!spotEntryPrice || !expectedVariation || !desiredPayout) {
+        setError('Invalid input parameters');
+        return {
+            spotQuantity: 0,
+            shortQuantity: 0,
+            leverage: 0,
+            fees: 0,
+            requiredMargin: 0,
+            expectedPayout: 0
+        };
     }
 
-    // Calculate net payout considering short position's potential loss
-    const Short_PnL = Q_short * (expectedVariation / 100) * spotEntryPrice;
-    const netPayout = desiredPayout - Short_PnL;
+    const fees = calculateFEE_RATES(twoWeeksVolume);
+    const totalFees = fees.takerFee * 2; // Entry and exit fees
 
-    // Return calculated parameters
+    // Calculate the required spot position size
+    const priceChangePercent = expectedVariation / 100;
+    const Q_spot = (desiredPayout + (spotEntryPrice * totalFees)) / (spotEntryPrice * priceChangePercent);
+    
+    // Calculate the short position size based on hedging ratio
+    const Q_short = Q_spot * hedgingRatio;
+
+    // Calculate position values
+    const totalInvestedLong = Q_spot * spotEntryPrice;
+    const shortPositionValue = Q_short * spotEntryPrice;
+
+    // Calculate leverage and margin for the short position
+    let requiredMargin;
+    if (isLeverageRegistred) {
+        requiredMargin = shortPositionValue / leverage;
+    } else {
+        requiredMargin = availableMargin;
+        leverage = shortPositionValue / availableMargin ;
+    }
+
+    // Calculate expected P&L at different price points
+    const exitPrice = spotEntryPrice * (1 + priceChangePercent);
+    const longPnL = Q_spot * (exitPrice - spotEntryPrice);
+    const shortPnL = Q_short * (spotEntryPrice - exitPrice);
+    const totalFeesCost = (totalInvestedLong + shortPositionValue) * totalFees;
+    const expectedTotalPnL = longPnL + shortPnL - totalFeesCost;
+
+    
     return {
         spotQuantity: Q_spot,
         shortQuantity: Q_short,
-        leverage: isLeverageRegistred ? leverage : null,
-        fees: formatNumber(shortFees),
-        requiredMargin: formatNumber(requiredMargin),
-        netPayout: formatNumber(netPayout)
+        leverage: leverage,
+        fees: totalFeesCost,
+        requiredMargin: requiredMargin,
+        expectedPayout: expectedTotalPnL
+    };
+}
+
+export function calculateUsingParams(
+    spotQuantity,
+    shortQuantity,
+    leverage,
+    fees,
+    requiredMargin,
+    priceVariation,
+    twoWeeksVolume,
+    spotEntryPrice
+) {
+    const feeRates = calculateFEE_RATES(twoWeeksVolume);
+    const totalFees = feeRates.takerFee * 2; // Entry and exit fees
+
+    // Calculate price change based on variation percentage
+    const exitPrice = spotEntryPrice * (1 + priceVariation / 100);
+
+    // Calculate P&L for long position
+    const longPnL = spotQuantity * (exitPrice - spotEntryPrice);
+
+    // Calculate P&L for short position
+    const shortPnL = shortQuantity * (spotEntryPrice - exitPrice);
+
+    // Calculate total fees
+    const totalInvestedLong = spotQuantity * spotEntryPrice;
+    const shortPositionValue = shortQuantity * spotEntryPrice;
+    const totalFeesCost = (totalInvestedLong + shortPositionValue) * totalFees;
+
+    // Calculate total payout
+    const spotPayout = longPnL - (totalInvestedLong * totalFees);
+    const hedgedPayout = longPnL + shortPnL - totalFeesCost;
+
+    return {
+        spotPayout: spotPayout,
+        hedgedPayout: hedgedPayout,
+        leverage: leverage,
+        requiredMargin: requiredMargin,
+        fees: totalFeesCost
+    };
+}
+
+export function calculateUsingParamsDelay(
+    spotQuantity,
+    shortQuantity,
+    leverage,
+    fees,
+    requiredMargin,
+    longClosePrice,
+    shortClosePrice,
+    twoWeeksVolume,
+    spotEntryPrice
+) {
+    const feeRates = calculateFEE_RATES(twoWeeksVolume);
+    const totalFees = feeRates.takerFee * 2; // Entry and exit fees
+
+    // Calculate P&L for long position
+    const longPnL = spotQuantity * (longClosePrice - spotEntryPrice);
+
+    // Calculate P&L for short position
+    const shortPnL = shortQuantity * (spotEntryPrice - shortClosePrice);
+
+    // Calculate total fees
+    const totalInvestedLong = spotQuantity * spotEntryPrice;
+    const shortPositionValue = shortQuantity * spotEntryPrice;
+    const totalFeesCost = (totalInvestedLong + shortPositionValue) * totalFees;
+
+    // Calculate total payout
+    const spotPayout = longPnL - (totalInvestedLong * totalFees);
+    const hedgedPayout = longPnL + shortPnL - totalFeesCost;
+
+    return {
+        spotPayout: spotPayout,
+        hedgedPayout: hedgedPayout,
+        leverage: leverage,
+        requiredMargin: requiredMargin,
+        fees: totalFeesCost
     };
 }
