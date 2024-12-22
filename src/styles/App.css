@@ -11,6 +11,17 @@
   font-family: 'Inter', sans-serif !important
 }
 
+/* Remove spinner arrows from number inputs */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
 /* General Reset and Base Styling */
 body, html {
   font-family: 'Inter', sans-serif;
@@ -244,6 +255,12 @@ main {
 
 .calculator-container input[type="number"]:hover, .calculator-container input[type="text"]:hover  {
   background: var(--color-light-green);
+}
+
+.nested-input{
+  background-color: transparent !important;
+  width: 1.8rem;
+  padding: 0.2rem !important;
 }
 
 /* Result Based Grid */

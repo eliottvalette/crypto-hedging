@@ -233,15 +233,31 @@ const ResultBasedShortHedging = () => {
             
             {/* Hedging Ratio */}
             <div className='result-based-ratio'>
-                <label>Percentage of my position I want covered : {hedgingRatio} %</label>
+                <label>Percentage of my position I want covered :
+                    <input
+                        type="number"
+                        min="0"
+                        max="100"
+                        step="0.5"
+                        value={hedgingRatio}
+                        onChange={(e) => {
+                            const value = parseFloat(e.target.value);
+                            if (!isNaN(value) && value >= 0 && value <= 100) {
+                                setHedgingRatio(value);
+                            }
+                        }}
+                        className='nested-input'
+                    /> %
+                </label>
                 <input
                     type="range"
                     min="0"
                     max="100"
                     step="0.5"
                     value={hedgingRatio}
-                    onChange={(e) => setHedgingRatio(e.target.value)}
+                    onChange={(e) => setHedgingRatio(parseFloat(e.target.value))}
                 />
+                    
             </div>
 
             <button onClick={handleCalculateHedge} className='calculate-button result-based-button'>
