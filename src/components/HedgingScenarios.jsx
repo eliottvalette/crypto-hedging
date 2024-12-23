@@ -4,13 +4,15 @@
 // hedging strategies using spot and futures positions
 // ===================================
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import Select from 'react-select';
 import { calculatePayoutFuture, calculatePayoutShort } from '../utils/hedging';
 import { getSpotPrice, getFuturesPrice, getAvailableSymbols } from '../utils/data';
 import TrendsChart from './TrendsChart';
 import { customStyles } from '../utils/config';
 import { generateNewTrend } from '../utils/trends';
+import { UserContext } from './UserContext';
+import { savePosition } from '../utils/firestore';
 
 const HedgingScenarios = () => {
     // ===================================
@@ -47,6 +49,10 @@ const HedgingScenarios = () => {
     const [error, setError] = useState('');
     const [trend, setTrend] = useState('upTrend');
     const [activeScenario, setActiveScenario] = useState('up');
+
+    const { user } = useContext(UserContext);
+    const [saveError, setSaveError] = useState('');
+    const [saveSuccess, setSaveSuccess] = useState(false);
 
     // ===================================
     // Utility Functions
@@ -208,6 +214,54 @@ const HedgingScenarios = () => {
         setTotalInvestedShort(results.neutral.totalInvestedShort);
     };
 
+    const handleSavePosition = async () => {
+        if (!user) {
+            setSaveError('Please log in to save positions');
+            return;
+        }
+
+        if (!spotEntryPrice || !quantity) {
+            setSaveError('Please fill in all required fields');
+            return;
+        }
+
+        try {
+            const positionData = {
+                id: Date.now(),
+                symbol: symbol.value,
+                longPosition: {
+                    quantity: parseFloat(quantity),
+                    entryPrice: parseFloat(spotEntryPrice),
+                    value: parseFloat(quantity) * parseFloat(spotEntryPrice)
+                },
+                hedgePosition: {
+                    type: hedgeType,
+                    quantity: hedgeType === 'spot' ? quantity * hedgingRatio : quantity * hedgingRatio,
+                    entryPrice: hedgeType === 'spot' ? spotEntryPrice : futuresEntryPrice,
+                    leverage: hedgeType === 'spot' ? totalInvestedShort / (quantity * hedgingRatio * spotEntryPrice) : totalInvestedFuture / (quantity * hedgingRatio * futuresEntryPrice),
+                    margin: hedgeType === 'spot' ? totalInvestedShort : totalInvestedFuture
+                },
+                hedgingRatio: hedgingRatio,
+                status: 'active',
+                LongclosePrice: null,
+                HedgeclosePrice: null,
+                pnl: null
+            };
+
+            await savePosition(user.uid, positionData);
+            setSaveSuccess(true);
+            setSaveError('');
+
+            // Reset success message after 3 seconds
+            setTimeout(() => {
+                setSaveSuccess(false);
+            }, 3000);
+        } catch (error) {
+            console.error('Error saving position:', error);
+            setSaveError('Error saving position. Please try again.');
+        }
+    };
+
     // ===================================
     // Component Render
     // ===================================
@@ -226,6 +280,15 @@ const HedgingScenarios = () => {
                 >
                     Futures Contract
                 </button>
+                {user && (
+                    <button
+                        className="save-button"
+                        onClick={handleSavePosition}
+                        disabled={!spotEntryPrice || !quantity}
+                    >
+                        Save Position
+                    </button>
+                )}
             </div>
     
             {hedgeType === 'spot' ? (
@@ -490,6 +553,8 @@ const HedgingScenarios = () => {
             )}
     
             {error && <div className="error-message">{error}</div>}
+            {saveError && <div className="error-message">{saveError}</div>}
+            {saveSuccess && <div className="success-message">Position saved successfully!</div>}
         </div>
     );
 };

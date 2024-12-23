@@ -770,15 +770,39 @@ main {
 .saved-orders th,
 .saved-orders td {
   padding: 1.2rem;
-  text-align: left;
+  text-align: center;
   border-bottom: 1px solid rgba(81, 210, 193, 0.1);
   transition: background-color 0.2s ease;
 }
 
+/* Asset column (first column) */
+.saved-orders th:first-child,
+.saved-orders td:first-child {
+  text-align: center;
+  padding-left: 2rem;
+}
+
+/* P&L column specific styling */
+.saved-orders th:nth-child(7),
+.saved-orders td:nth-child(7) {  /* 7th column is P&L */
+  min-width: 120px;
+  text-align: center;
+  padding-right: 2rem;
+}
+
+/* Actions column (last column) */
+.saved-orders th:last-child,
+.saved-orders td:last-child {
+  text-align: center;
+  padding-right: 2rem;
+}
+
+/* Hover effect for table rows */
 .saved-orders tr:hover td {
   background-color: rgba(28, 163, 123, 0.1);
 }
 
+/* Header styling */
 .saved-orders th {
   background: var(--color-dark-green);
   font-weight: 600;
@@ -786,13 +810,48 @@ main {
   text-transform: uppercase;
   font-size: 0.85rem;
   letter-spacing: 0.05em;
+  text-align: center;
+  padding: 1.2rem;
 }
 
+/* Asset column header (first column) */
+.saved-orders th:first-child {
+  text-align: center;
+  padding-left: 2rem;
+}
+
+/* P&L column header */
+.saved-orders th:nth-child(7) {
+  text-align: center;
+  padding-right: 2rem;
+}
+
+/* Actions column header */
+.saved-orders th:last-child {
+  text-align: center;
+  padding-right: 2rem;
+}
+
+/* Center the content of entry price divs */
 .saved-orders .entry-price {
   font-size: 0.9em;
   color: var(--color-light-gray);
   opacity: 0.7;
   margin-top: 0.3rem;
+  text-align: center;
+}
+
+/* Ensure status labels remain centered */
+.saved-orders .status-active,
+.saved-orders .status-closed {
+  color: var(--color-teal);
+  background: rgba(81, 210, 193, 0.1);
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-weight: 500;
+  display: inline-block;
+  text-align: center;
+  margin: 0 auto;
 }
 
 /* Status labels */
@@ -982,5 +1041,73 @@ main {
   .saved-orders .filter-button {
     padding: 0.4rem 0.8rem;
     font-size: 0.8rem;
+  }
+}
+
+/* Save button in calculator */
+.save-button {
+  background: var(--color-light-green);
+  color: var(--color-dark-teal);
+  padding: 1rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: bold;
+  transition: all 0.2s ease;
+}
+
+.save-button:hover:not(:disabled) {
+  background: var(--color-teal);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+}
+
+.save-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Success message */
+.success-message {
+  background-color: var(--color-light-green);
+  color: var(--color-dark-teal);
+  padding: 1rem;
+  border-radius: 8px;
+  margin-top: 1rem;
+  font-weight: bold;
+  text-align: center;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Loading message */
+.loading-message {
+  text-align: center;
+  padding: 2rem;
+  color: var(--color-light-gray);
+  font-size: 1.1rem;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.6;
   }
 }
