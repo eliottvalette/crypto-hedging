@@ -1,4 +1,7 @@
-/* Color Variables */
+/* -------------------------------------------------------------------------------- */
+/*                                   1. VARIABLES                                   */
+/* -------------------------------------------------------------------------------- */
+/* Define color palette and global font settings */
 :root {
   --color-white: #FFFFFF;
   --color-light-gray: #F5FEFD;
@@ -8,21 +11,26 @@
   --color-dark-teal: #131E22;
   --color-red: #E76D85;
   --color-dark-red: #35272F;
-  font-family: 'Inter', sans-serif !important
+  font-family: 'Inter', sans-serif !important;
 }
 
-/* Remove spinner arrows from number inputs */
+/* -------------------------------------------------------------------------------- */
+/*                             2. GLOBAL RESETS & BASE                              */
+/* -------------------------------------------------------------------------------- */
+
+/* Remove spinner arrows from number inputs (Chrome/Safari) */
 input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
 
+/* Remove spinner arrows from number inputs (Firefox) */
 input[type="number"] {
   -moz-appearance: textfield;
 }
 
-/* General Reset and Base Styling */
+/* Reset body & html, set base font, prevent horizontal overflow */
 body, html {
   font-family: 'Inter', sans-serif;
   margin: 0;
@@ -32,6 +40,7 @@ body, html {
   color: var(--color-white);
 }
 
+/* Fixed background image for entire page */
 body::before {
   content: "";
   position: fixed;
@@ -46,11 +55,13 @@ body::before {
   background-position: center bottom;
 }
 
+/* Make all anchor tags inherit color and remove underline */
 a {
   text-decoration: none;
   color: inherit;
 }
 
+/* Headings - remove default margin, set weights and sizes */
 h1 {
   margin: 0;
   font-weight: 500;
@@ -63,14 +74,20 @@ h2, h3, h4, h5, h6 {
   font-weight: 500;
 }
 
+/* ---------------------------------- Layout -------------------------------------- */
+
+/* Main App container */
 .App {
   display: flex;
   flex-direction: row;
   min-height: 100vh;
-  gap: 0
+  gap: 0;
 }
 
-/* Sidebar (Aside) */
+/* -------------------------------------------------------------------------------- */
+/*                                     3. ASIDE                                     */
+/* -------------------------------------------------------------------------------- */
+/* Fixed sidebar (aside) */
 aside {
   position: fixed;
   top: 0;
@@ -88,13 +105,15 @@ aside {
   border-right: 2px solid var(--color-dark-green);
 }
 
+/* Logo/title in aside */
 .aside-top h1 {
   font-size: 2rem;
   font-weight: 600;
   color: var(--color-teal);
 }
 
-.nav-ul{
+/* Navigation list */
+.nav-ul {
   padding: 0;
 }
 
@@ -109,6 +128,7 @@ aside {
   gap: 2rem;
 }
 
+/* Nav links */
 .aside-top nav ul li a {
   display: flex;
   padding: 10px 15px;
@@ -117,6 +137,7 @@ aside {
   transition: color 0.3s ease;
 }
 
+/* Hover and Active link states */
 .aside-top nav ul li a:hover {
   color: var(--color-light-green);
 }
@@ -131,7 +152,9 @@ aside {
   transition: all 0.3s ease;
 }
 
-/* Footer */
+/* -------------------------------------------------------------------------------- */
+/*                                    4. FOOTER                                     */
+/* -------------------------------------------------------------------------------- */
 .footer {
   background-color: transparent;
   color: var(--color-light-gray);
@@ -142,7 +165,9 @@ aside {
   border-top: 2px solid var(--color-dark-green);
 }
 
-/* Main Content */
+/* -------------------------------------------------------------------------------- */
+/*                                  5. MAIN CONTENT                                 */
+/* -------------------------------------------------------------------------------- */
 main {
   height: 100vh;
   margin-left: 20rem;
@@ -151,10 +176,12 @@ main {
   flex-direction: column;
   align-items: center;
   gap: 0;
-  overflow-y:scroll
+  overflow-y: scroll;
 }
 
-/* Header */
+/* -------------------------------------------------------------------------------- */
+/*                                     6. HEADER                                    */
+/* -------------------------------------------------------------------------------- */
 .header {
   background-color: transparent;
   color: var(--color-white);
@@ -167,6 +194,7 @@ main {
   max-height: 5.5vh;
 }
 
+/* Header-specific button */
 .header-button {
   position: relative;
   background: linear-gradient(180deg, #004A37, #072723);
@@ -182,7 +210,9 @@ main {
   z-index: 1;
 }
 
-/* Dashboard */
+/* -------------------------------------------------------------------------------- */
+/*                                  7. DASHBOARD                                    */
+/* -------------------------------------------------------------------------------- */
 .dashboard {
   padding: 2rem;
   width: 90%;
@@ -192,6 +222,7 @@ main {
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
+/* Market info section */
 .market-info {
   background: linear-gradient(135deg, #009D89, #029671);
   padding: 1.5rem;
@@ -202,7 +233,9 @@ main {
   text-align: center;
 }
 
-/* Chart Container */
+/* -------------------------------------------------------------------------------- */
+/*                                 8. CHART SECTION                                 */
+/* -------------------------------------------------------------------------------- */
 .chart-container {
   background: var(--color-dark-teal);
   border-radius: 12px;
@@ -214,7 +247,9 @@ main {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
-/* Calculator */
+/* -------------------------------------------------------------------------------- */
+/*                                9. CALCULATOR CSS                                 */
+/* -------------------------------------------------------------------------------- */
 .calculator-container {
   margin: 2rem 2rem 2rem 2rem;
   width: 100%;
@@ -237,6 +272,7 @@ main {
   text-align: center;
 }
 
+/* Inputs within calculator */
 .calculator-container input[type="number"],
 .calculator-container input[type="text"],
 .calculator-container input[type="range"] {
@@ -249,21 +285,25 @@ main {
   transition: background 0.3s ease, color 0.3s ease;
 }
 
+/* Range input accent color */
 .calculator-container input[type="range"] {
   accent-color: var(--color-light-green);
 }
 
-.calculator-container input[type="number"]:hover, .calculator-container input[type="text"]:hover  {
+/* Hover states for text/number inputs */
+.calculator-container input[type="number"]:hover,
+.calculator-container input[type="text"]:hover {
   background: var(--color-light-green);
 }
 
-.nested-input{
+/* Smaller nested input style */
+.nested-input {
   background-color: transparent !important;
   width: 1.8rem;
   padding: 0.2rem !important;
 }
 
-/* Result Based Grid */
+/* Grid layout for results within calculator */
 .result-based-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -276,28 +316,24 @@ main {
   grid-row: 1;
 }
 
-.result-based-currency {
+.result-based-currency,
+.result-based-spot-entry,
+.result-based-exit-target,
+.result-based-payout,
+.result-based-ratio,
+.results-container {
   grid-column: 1 / -1;
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.result-based-spot-entry{
+.result-based-button {
   grid-column: 1 / -1;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  height: 3rem;
 }
 
-.result-based-exit-target{
-  grid-column: 1 / -1;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.result-based-margin{
+.result-based-margin {
   grid-column: 1 / 2;
   display: flex;
   flex-direction: column;
@@ -305,7 +341,7 @@ main {
   margin-right: 8px;
 }
 
-.result-based-leverage{
+.result-based-leverage {
   grid-column: 2 / 3;
   display: flex;
   flex-direction: column;
@@ -313,29 +349,7 @@ main {
   margin-left: 8px;
 }
 
-.result-based-payout{
-  grid-column: 1 / -1;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.result-based-ratio{
-  grid-column: 1 / -1;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.result-based-button{
-  grid-column: 1 / -1;
-}
-
-.results-container{
-  grid-column: 1 / -1;
-}
-
-/* Used and Not Used */
+/* Indicators: used / not-used */
 .used {
   opacity: 1;
 }
@@ -344,7 +358,9 @@ main {
   opacity: 0.3;
 }
 
-/* Buttons */
+/* -------------------------------------------------------------------------------- */
+/*                                 10. BUTTON STYLES                                */
+/* -------------------------------------------------------------------------------- */
 .buttons-container {
   display: flex;
   gap: 1rem;
@@ -367,6 +383,7 @@ main {
   color: var(--color-dark-teal);
 }
 
+/* “Calculate” button within calculator */
 .calculate-button {
   width: 100%;
   padding: 1rem;
@@ -395,7 +412,9 @@ main {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-/* Results Container */
+/* -------------------------------------------------------------------------------- */
+/*                                11. RESULTS SECTION                               */
+/* -------------------------------------------------------------------------------- */
 .results-container {
   background: var(--color-dark-teal);
   padding: 2rem;
@@ -424,10 +443,11 @@ main {
   margin-top: 1.5rem;
 }
 
-.results-without{
+.results-without {
   color: #ffffff86;
 }
 
+/* Container for different result types (profit, loss, etc.) */
 .results-types-container {
   display: flex;
   flex-direction: row;
@@ -460,7 +480,9 @@ main {
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
 }
 
-/* Adjusted Payout */
+/* -------------------------------------------------------------------------------- */
+/*                              12. ADJUSTED PAYOUT BOX                             */
+/* -------------------------------------------------------------------------------- */
 .adjusted-payout {
   background: var(--color-dark-teal);
   padding: 1rem;
@@ -493,7 +515,9 @@ main {
   color: var(--color-light-gray);
 }
 
-/* Dropdown (Risk Aversion Select) */
+/* -------------------------------------------------------------------------------- */
+/*                          13. DROPDOWNS (Risk & Currency)                         */
+/* -------------------------------------------------------------------------------- */
 .risk-select, .currency-select {
   width: 100%;
   padding: 1rem;
@@ -511,13 +535,16 @@ main {
   background: var(--color-light-green);
 }
 
+/* Focus styles for both */
 .risk-select:focus, .currency-select:focus {
   outline: none;
   background: var(--color-teal);
   color: var(--color-dark-teal);
 }
 
-/* Auth */
+/* -------------------------------------------------------------------------------- */
+/*                                 14. AUTH STYLES                                  */
+/* -------------------------------------------------------------------------------- */
 .auth-container {
   display: flex;
   justify-content: center;
@@ -554,6 +581,7 @@ main {
   margin-bottom: 1rem;
 }
 
+/* Auth forms: inputs, button, google btn, links */
 .auth-input {
   width: calc(100% - 2rem); /* Adjusted to fit within the container */
   padding: 1rem;
@@ -615,31 +643,9 @@ main {
   color: var(--color-light-green);
 }
 
-.reload-button {
-  background: var(--color-dark-green);
-  border: 2px solid var(--color-light-green);
-  color: var(--color-white);
-  cursor: pointer;
-  font-size: 1rem;
-  padding: 0.5rem 1rem;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  transition: background 0.3s ease, color 0.3s ease;
-  height: 2.5rem;
-}
-
-.reload-button svg {
-  font-size: 1rem;
-}
-
-.reload-button:hover {
-  background: var(--color-light-green);
-  color: var(--color-dark-teal);
-}
-
-/* Error Message */
+/* -------------------------------------------------------------------------------- */
+/*                                15. ERROR MESSAGE                                 */
+/* -------------------------------------------------------------------------------- */
 .error-message {
   background-color: var(--color-red);
   padding: 1rem;
@@ -649,6 +655,9 @@ main {
   text-align: center;
 }
 
+/* -------------------------------------------------------------------------------- */
+/*                                16. CHART TOOLS                                   */
+/* -------------------------------------------------------------------------------- */
 .chart-tools {
   display: flex;
   flex-direction: row;
@@ -663,7 +672,7 @@ main {
   margin-top: 1rem;
 }
 
-.hedge-button, .long-button, .reload-button{
+.hedge-button, .long-button, .reload-button {
   padding: 0.5rem 1rem;
   font-size: 1rem;
   border-radius: 8px;
@@ -672,29 +681,36 @@ main {
   transition: background 0.3s ease, color 0.3s ease;
 }
 
+/* Long button styling */
 .long-button {
   background: var(--color-dark-green);
   border: 2px solid var(--color-light-green);
 }
 
+/* Hedge button styling */
 .hedge-button {
   background: var(--color-dark-red);
   border: 2px solid var(--color-red);
 }
 
-.long-button.active, .long-button:hover, .reload-button:hover {
+/* Hover and active states for position/reload buttons */
+.long-button.active,
+.long-button:hover,
+.reload-button:hover {
   background: var(--color-teal);
   color: var(--color-dark-teal);
   box-shadow: 0 2px 6px rgba(255, 255, 255, 0.4);
 }
 
-.hedge-button.active, .hedge-button:hover {
+.hedge-button.active,
+.hedge-button:hover {
   background: var(--color-red);
   color: var(--color-white);
   box-shadow: 0 2px 6px rgba(255, 255, 255, 0.4);
 }
 
-.long-button:not(.active):hover, .reload-button:not(.active):hover {
+.long-button:not(.active):hover,
+.reload-button:not(.active):hover {
   background: var(--color-teal);
   color: var(--color-dark-teal);
 }
@@ -704,7 +720,23 @@ main {
   color: var(--color-white);
 }
 
-/* Saved Orders */
+/* Reload button specifics */
+.reload-button {
+  background: var(--color-dark-green);
+  border: 2px solid var(--color-light-green);
+  height: 2.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.reload-button svg {
+  font-size: 1rem;
+}
+
+/* -------------------------------------------------------------------------------- */
+/*                                17. SAVED ORDERS                                  */
+/* -------------------------------------------------------------------------------- */
 .saved-orders {
   width: 90%;
   margin: 2rem auto;
@@ -723,6 +755,7 @@ main {
   font-weight: 600;
 }
 
+/* Saved orders table */
 .saved-orders table {
   width: 100%;
   border-collapse: separate;
@@ -733,6 +766,7 @@ main {
   overflow: hidden;
 }
 
+/* Table cells and hover effects */
 .saved-orders th,
 .saved-orders td {
   padding: 1.2rem;
@@ -761,6 +795,7 @@ main {
   margin-top: 0.3rem;
 }
 
+/* Status labels */
 .saved-orders .status-active {
   color: var(--color-teal);
   background: rgba(81, 210, 193, 0.1);
@@ -779,6 +814,7 @@ main {
   display: inline-block;
 }
 
+/* Profit and loss styling */
 .saved-orders .profit,
 .saved-orders .loss {
   font-weight: 600;
@@ -801,7 +837,7 @@ main {
   white-space: nowrap;
 }
 
-/* Add action buttons */
+/* Row action buttons */
 .saved-orders .action-buttons {
   display: flex;
   gap: 0.5rem;
@@ -835,7 +871,6 @@ main {
   color: var(--color-dark-teal);
 }
 
-/* Add hover effects for enabled buttons only */
 .saved-orders .close-button:not(:disabled):hover {
   background: var(--color-dark-red);
   transform: translateY(-1px);
@@ -846,84 +881,7 @@ main {
   transform: translateY(-1px);
 }
 
-/* Responsive design improvements */
-@media (max-width: 1200px) {
-  .saved-orders {
-    width: 95%;
-    padding: 1.5rem;
-  }
-  
-  .saved-orders th,
-  .saved-orders td {
-    padding: 1rem;
-  }
-}
-
-@media (max-width: 768px) {
-  .saved-orders {
-    width: 100%;
-    padding: 1rem;
-    overflow-x: auto;
-  }
-
-  .saved-orders table {
-    font-size: 0.85rem;
-  }
-
-  .saved-orders th,
-  .saved-orders td {
-    padding: 0.8rem;
-  }
-
-  .saved-orders .status-active,
-  .saved-orders .status-closed {
-    padding: 0.3rem 0.6rem;
-    font-size: 0.8rem;
-  }
-}
-
-/* Media Queries for Responsiveness */
-@media (max-width: 1350px){
-  .results-container, .results-container h2 {
-    font-size: 0.7rem;
-  }
-}
-
-@media (max-width: 1090px) {
-  .results-types-container {
-    flex-direction: column;
-    gap: 1rem;
-  }
-  .results-types-container > div {
-    flex: 1 1 100%;
-    max-width: 100%;
-  }
-}
-
-@media (max-width: 768px) {
-  .aside h1 {
-    font-size: 1.5rem;
-  }
-  .dashboard {
-    padding: 1.5rem;
-  }
-
-  .chart-container {
-    height: 40vh;
-  }
-  .calculator-container {
-    max-width: 90vw;
-  }
-  .results-types-container {
-    flex-direction: column;
-  }
-  .results-types-container > div {
-    max-width: 100%;
-  }
-}
-
-/* Add these styles to your existing saved-orders styles */
-
+/* Filter buttons in saved orders */
 .saved-orders .filter-buttons {
   display: flex;
   gap: 1rem;
@@ -954,13 +912,73 @@ main {
   border-color: var(--color-teal);
 }
 
-/* Update responsive styles */
+/* -------------------------------------------------------------------------------- */
+/*                                18. MEDIA QUERIES                                 */
+/* -------------------------------------------------------------------------------- */
+
+/* Reduce size of .results-container & text for smaller screens */
+@media (max-width: 1350px) {
+  .results-container, .results-container h2 {
+    font-size: 0.7rem;
+  }
+}
+
+/* Adjust layout for .results-types-container on smaller screens */
+@media (max-width: 1090px) {
+  .results-types-container {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .results-types-container > div {
+    flex: 1 1 100%;
+    max-width: 100%;
+  }
+}
+
+/* General adjustments for medium screens */
 @media (max-width: 768px) {
+  .aside h1 {
+    font-size: 1.5rem;
+  }
+  .dashboard {
+    padding: 1.5rem;
+  }
+
+  .chart-container {
+    height: 40vh;
+  }
+  .calculator-container {
+    max-width: 90vw;
+  }
+  .results-types-container {
+    flex-direction: column;
+  }
+  .results-types-container > div {
+    max-width: 100%;
+  }
+
+  /* Saved-orders layout for smaller screens */
+  .saved-orders {
+    width: 100%;
+    padding: 1rem;
+    overflow-x: auto;
+  }
+  .saved-orders table {
+    font-size: 0.85rem;
+  }
+  .saved-orders th,
+  .saved-orders td {
+    padding: 0.8rem;
+  }
+  .saved-orders .status-active,
+  .saved-orders .status-closed {
+    padding: 0.3rem 0.6rem;
+    font-size: 0.8rem;
+  }
   .saved-orders .filter-buttons {
     flex-wrap: wrap;
     gap: 0.5rem;
   }
-  
   .saved-orders .filter-button {
     padding: 0.4rem 0.8rem;
     font-size: 0.8rem;

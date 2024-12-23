@@ -1,40 +1,65 @@
+// ===================================
+// Hedging Scenarios Calculator
+// Main component for calculating and visualizing different
+// hedging strategies using spot and futures positions
+// ===================================
+
 import { useState, useEffect } from 'react';
 import Select from 'react-select';
-import { calculatePayoutFuture, calculatePayoutShort, calculateBestPayout } from '../utils/hedging';
+import { calculatePayoutFuture, calculatePayoutShort } from '../utils/hedging';
 import { getSpotPrice, getFuturesPrice, getAvailableSymbols } from '../utils/data';
 import TrendsChart from './TrendsChart';
 import { customStyles } from '../utils/config';
 import { generateNewTrend } from '../utils/trends';
-import { use } from 'react';
 
 const HedgingScenarios = () => {
+    // ===================================
+    // State Management
+    // ===================================
+    // Strategy States
     const [hedgeType, setHedgeType] = useState('spot');
     const [symbol, setSymbol] = useState({ value: 'BTCUSDT', label: 'BTCUSDT' });
     const [quantity, setQuantity] = useState(1);
+    const [hedgingRatio, setHedgingRatio] = useState(0.5);
+
+    // Price States
     const [spotEntryPrice, setSpotEntryPrice] = useState(0);
     const [futuresEntryPrice, setFuturesEntryPrice] = useState(0);
-    const [hedgingRatio, setHedgingRatio] = useState(0.5);
     const [availableSymbols, setAvailableSymbols] = useState([]);
-    const [spotPayouts, setSpotPayouts] = useState({ up: null, down: null, neutral: null });
-    const [hedgedPayouts, setHedgedPayouts] = useState({ up: null, down: null, neutral: null });
-    const [optimalLeverage, setOptimalLeverage] = useState(null);
-    const [error, setError] = useState('');
-    const [trend, setTrend] = useState('upTrend');
+    const [twoWeeksVolume] = useState(0);
+
+    // Investment States
     const [totalInvested, setTotalInvested] = useState(0);
     const [totalInvestedLong, setTotalInvestedLong] = useState(0);
     const [totalInvestedShort, setTotalInvestedShort] = useState(0);
     const [totalInvestedFuture, setTotalInvestedFuture] = useState(0);
-    const [twoWeeksVolume, setTwoWeeksVolume] = useState(0);
-    const [activeScenario, setActiveScenario] = useState('up');
+    const [optimalLeverage, setOptimalLeverage] = useState(null);
+
+    // Result States
+    const [spotPayouts, setSpotPayouts] = useState({ up: null, down: null, neutral: null });
+    const [hedgedPayouts, setHedgedPayouts] = useState({ up: null, down: null, neutral: null });
     const [adjustedPayout, setAdjustedPayout] = useState(null);
     const [originalClosePrice, setOriginalClosePrice] = useState(null);
     const [hedgeClosePrice, setHedgeClosePrice] = useState(null);
     const [bestPayout, setBestPayout] = useState({ bestSpotPayout: 0, bestHedgedPayout: 0 });
 
+    // UI States
+    const [error, setError] = useState('');
+    const [trend, setTrend] = useState('upTrend');
+    const [activeScenario, setActiveScenario] = useState('up');
+
+    // ===================================
+    // Utility Functions
+    // ===================================
+    // Format numbers for display
     const formatNumber = (number) => {
         return number.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     };
 
+    // ===================================
+    // Data Fetching Effects
+    // ===================================
+    // Fetch available trading symbols
     useEffect(() => {
         async function fetchSymbols() {
             const symbols = await getAvailableSymbols();
@@ -44,10 +69,12 @@ const HedgingScenarios = () => {
         fetchSymbols();
     }, []);
 
+    // Update total invested amount when quantity or price changes
     useEffect(() => {
         setTotalInvested(quantity * spotEntryPrice);
     }, [quantity, spotEntryPrice]);
 
+    // Fetch current market prices
     useEffect(() => {
         async function fetchPrices() {
             try {
@@ -71,6 +98,18 @@ const HedgingScenarios = () => {
         fetchPrices();
     }, [symbol]);
 
+    // ===================================
+    // Event Handlers
+    // ===================================
+    // Handle total invested amount changes
+    const handleTotalInvestedChange = (e) => {
+        const value = e.target.value.replace(/,/g, ''); // Remove commas
+        if (!isNaN(value)) {
+            setTotalInvested(parseFloat(value) || 0); // Update state with the numeric value
+        }
+    };
+
+    // Calculate futures hedging scenarios
     const handleCalculateFuture = () => {
         if (error) {
             console.error('Calculation error:', error);
@@ -121,7 +160,8 @@ const HedgingScenarios = () => {
         setTotalInvestedLong(results.neutral.totalInvestedLong);
         setTotalInvestedFuture(results.neutral.totalInvestedFuture);
     };
-    
+
+    // Calculate spot hedging scenarios
     const handleCalculateShort = () => {
         const Q = parseFloat(quantity);
         const P_spot_achat = parseFloat(spotEntryPrice);
@@ -168,20 +208,9 @@ const HedgingScenarios = () => {
         setTotalInvestedShort(results.neutral.totalInvestedShort);
     };
 
-    useEffect(() => {
-        setTotalInvested(quantity * spotEntryPrice);
-    }, [quantity, spotEntryPrice]);
-
-    const handleTotalInvestedChange = (e) => {
-        const value = e.target.value.replace(/,/g, ''); // Remove commas
-        if (!isNaN(value)) {
-            setTotalInvested(parseFloat(value) || 0); // Update state with the numeric value
-        }
-    };
-
-    console.log('adjustedPayout:', adjustedPayout);
-
-
+    // ===================================
+    // Component Render
+    // ===================================
     return (
         <div className="calculator-container">
             <div className="buttons-container">

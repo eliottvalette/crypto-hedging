@@ -126,7 +126,8 @@ const TrendsChart = ({
       spot_entry_price,
       futures_entry_price,
       hedgingRatio,
-      twoWeeksVolume
+      twoWeeksVolume,
+      params
     );
     setBestPayout({ bestSpotPayout, bestHedgedPayout });
   }, [isClosingHedge, type, seriesData, trend, hedgingRatio]);
@@ -308,7 +309,7 @@ const TrendsChart = ({
           twoWeeksVolume,
           spot_entry_price
         ).hedgedPayout;
-      } else {
+      } else if (type === 'spot') {
         payout = calculatePayoutShortDelay(
           quantity, 
           spot_entry_price, 
@@ -324,6 +325,9 @@ const TrendsChart = ({
       setHedgeClosePrice(hedgeClosePriceTemp);
     }
   }, [quantity, spot_entry_price, originalClosePriceTemp, hedgeClosePriceTemp, hedgingRatio, twoWeeksVolume, type, params]);
+
+
+  console.log('params :', params)
 
   return (
     <div id="chart">

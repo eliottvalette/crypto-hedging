@@ -1,3 +1,9 @@
+// ===================================
+// Result Based Short Hedging Calculator
+// Main component for calculating and displaying hedging parameters
+// based on user-defined target results
+// ===================================
+
 import { useState, useEffect } from 'react';
 import Select from 'react-select';
 import { calculateShortHedgeParameters, calculateUsingParams } from '../utils/hedging';
@@ -7,7 +13,10 @@ import TrendsChart from './TrendsChart';
 import { generateNewTrend } from '../utils/trends';
 
 const ResultBasedShortHedging = () => {
-    // Store input values as strings for maximum control
+    // ===================================
+    // State Management
+    // ===================================
+    // Input States
     const [expectedVariationText, setExpectedVariationText] = useState('+10%');
     const [expectedVariation, setExpectedVariation] = useState(10);
     const [availableMargin, setAvailableMargin] = useState('2000');
@@ -16,21 +25,28 @@ const ResultBasedShortHedging = () => {
     const [calculatedParams, setCalculatedParams] = useState(null);
     const [hedgingRatio, setHedgingRatio] = useState(50);
 
-    // Additional states
+    // Market Data States
     const [spotEntryPrice, setSpotEntryPrice] = useState(0);
     const [symbol, setSymbol] = useState({ value: 'BTCUSDT', label: 'BTCUSDT' });
     const [availableSymbols, setAvailableSymbols] = useState([]);
-    const [twoWeeksVolume, setTwoWeeksVolume] = useState(0);
+    const [twoWeeksVolume] = useState(0);
+
+    // UI States
     const [error, setError] = useState('');
     const [payoutScenarios, setPayoutScenarios] = useState({low:null, noChange:null, high:null});
     const [isLeverageRegistred, setIsLeverageRegistred] = useState(false);
     const [trend, setTrend] = useState('upTrend');
+
+    // Result States
     const [adjustedPayout, setAdjustedPayout] = useState(null);
     const [originalClosePrice, setOriginalClosePrice] = useState(null);
     const [hedgeClosePrice, setHedgeClosePrice] = useState(null);
     const [bestPayout, setBestPayout] = useState({ bestSpotPayout: 0, bestHedgedPayout: 0 });
 
-    // Fetch the list of available symbols once
+    // ===================================
+    // Data Fetching Effects
+    // ===================================
+    // Fetch available trading symbols
     useEffect(() => {
         async function fetchSymbols() {
             try {
@@ -45,6 +61,7 @@ const ResultBasedShortHedging = () => {
         fetchSymbols();
     }, []);
 
+    // Fetch current spot price when symbol changes
     useEffect(() => {
         async function fetchPrices() {
             try {
@@ -60,30 +77,36 @@ const ResultBasedShortHedging = () => {
         fetchPrices();
     }, [symbol]);
 
+    // ===================================
+    // Utility Functions
+    // ===================================
+    // Format expected variation from text input
     const formatExpectedVariation = (value) => {
         // tranform ±10% to 10 or -10
         const sign = value[0] === '-' ? -1 : 1;
         return sign * parseFloat(value.slice(1));
     };
 
+    // Format number display
+    const formatNumber = (number) => {
+        if (number < 0.01 && number > 0) return number.toExponential(2);
+        return parseFloat(number).toFixed(3);
+    };
+
+    const formatPreciseNumber = (number) => {
+        if (number < 0.001 && number > 0) return number.toExponential(2);
+        return parseFloat(number).toFixed(6);
+    };
+
+    // ===================================
+    // Event Handlers
+    // ===================================
+    // Handle variation text changes
     useEffect(() => {
         setExpectedVariation(formatExpectedVariation(expectedVariationText));
     }, [expectedVariationText]);
 
-    // Fetch the spot price whenever the symbol changes
-    useEffect(() => {
-        async function fetchPrices() {
-            try {
-                const spotPrice = await getSpotPrice(symbol.value);
-                setSpotEntryPrice(parseFloat(spotPrice));
-            } catch (err) {
-                console.error('Error fetching spot price:', err);
-                setError('Failed to fetch spot price.');
-            }
-        }
-        fetchPrices();
-    }, [symbol]);
-
+    // Calculate hedge parameters
     const handleCalculateHedge = () => {
         setError('');
 
@@ -157,22 +180,16 @@ const ResultBasedShortHedging = () => {
             });
 
             setCalculatedParams(params);
+            
         } catch (err) {
             console.error('Hedge Calculation Error:', err);
             setError(`Calculation failed: ${err.message}`);
         }
     };
-    
-    const formatNumber = (number) => {
-        if (number < 0.01 && number > 0) return number.toExponential(2);
-        return parseFloat(number).toFixed(3);
-    };
 
-    const formatPreciseNumber = (number) => {
-        if (number < 0.001 && number > 0) return number.toExponential(2);
-        return parseFloat(number).toFixed(6);
-    };
-
+    // ===================================
+    // Component Render
+    // ===================================
     return (
         <div className="result-based-grid calculator-container">
             <h1 className='result-based-h1'>Result-Based Short Hedging</h1>
@@ -294,9 +311,23 @@ const ResultBasedShortHedging = () => {
                     {payoutScenarios && (
                         <>
                             <h2>What would be my payout if the market doesn't go as expected?</h2>
-                            <p>Down scenario (-10%) : <strong>${formatNumber(payoutScenarios.low)}</strong></p>
-                            <p>No change scenario (0%) : <strong>${formatNumber(payoutScenarios.noChange)}</strong></p>
-                            <p>Up scenario (+10%) : <strong>${formatNumber(payoutScenarios.high)}</strong></p>
+                            <div className="results-types-container">
+                                <div className={`results-down ${trend === 'downTrend' ? 'active' : ''}`} onClick={() => setTrend('downTrend')}>
+                                    <h3>Down Scenario (-10%)</h3>
+                                    <p className="results-without">No Hedge: ${formatNumber(payoutScenarios.low)}</p>
+                                    <p>With Hedge: ${formatNumber(payoutScenarios.low)}</p>
+                                </div>
+                                <div className={`results-neutral ${trend === 'sideTrend' ? 'active' : ''}`} onClick={() => setTrend('sideTrend')}>
+                                    <h3>Neutral Scenario (0%)</h3>
+                                    <p className="results-without">No Hedge: ${formatNumber(payoutScenarios.noChange)}</p>
+                                    <p>With Hedge: ${formatNumber(payoutScenarios.noChange)}</p>
+                                </div>
+                                <div className={`results-up ${trend === 'upTrend' ? 'active' : ''}`} onClick={() => setTrend('upTrend')}>
+                                    <h3>Up Scenario (+10%)</h3>
+                                    <p className="results-without">No Hedge: ${formatNumber(payoutScenarios.high)}</p>
+                                    <p>With Hedge: ${formatNumber(payoutScenarios.high)}</p>
+                                </div>
+                            </div>
                         </>
                     )}
                     
@@ -316,7 +347,13 @@ const ResultBasedShortHedging = () => {
                         setOriginalClosePrice={setOriginalClosePrice}
                         setHedgeClosePrice={setHedgeClosePrice}
                         setBestPayout={setBestPayout}
-                        params={calculatedParams}
+                        params={{
+                            spotQuantity: calculatedParams.spotQuantity,
+                            shortQuantity: calculatedParams.shortQuantity,
+                            leverage: calculatedParams.leverage,
+                            fees: calculatedParams.fees,
+                            requiredMargin: calculatedParams.requiredMargin
+                        }}
                     />
                     {adjustedPayout ? (
                         <div className="adjusted-payout">

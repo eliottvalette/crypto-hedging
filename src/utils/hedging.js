@@ -1,5 +1,8 @@
-// hedging.js
-
+// ===================================
+// Fee Rate Calculation
+// ===================================
+// Calculates trading fees based on two weeks trading volume
+// Returns an object with taker, maker, and funding fees
 function calculateFEE_RATES(twoWeeksVolume) {
     if (twoWeeksVolume < 5_000_000) {
         return {
@@ -41,21 +44,30 @@ function calculateFEE_RATES(twoWeeksVolume) {
     }
 }
 
+// ===================================
+// Utility Functions
+// ===================================
+// Formats numbers with 2 decimal places using US locale
 function formatNumber(number) {
     return number.toLocaleString('en-US', { minimumFractionDigits: 2});
 }
 
+// Calculates trading fees based on quantity, price and fee rate
 function calculateFees(quantity, entryPrice, feeRate) {
     return quantity * entryPrice * feeRate;
 }
 
+// Calculates combined payout for long and short positions
 function calculatePayout(longQuantity, shortQuantity, entryPrice, exitPrice, fees) {
     const longPayout = longQuantity * (exitPrice - entryPrice) - fees.long;
     const shortPayout = shortQuantity * (entryPrice - exitPrice) - fees.short;
     return longPayout + shortPayout;
 }
 
-// Adjusted Calculate payouts for Futures Hedging
+// ===================================
+// Futures Hedging Calculations
+// ===================================
+// Calculates payouts for futures hedging with simultaneous entry/exit
 export function calculatePayoutFuture(quantity, spotEntryPrice, futuresEntryPrice, ExitPrice, hedgingRatio, twoWeeksVolume) {
     const fees = calculateFEE_RATES(twoWeeksVolume);
     const Q = parseFloat(quantity) || 1;
@@ -90,6 +102,7 @@ export function calculatePayoutFuture(quantity, spotEntryPrice, futuresEntryPric
     };
 }
 
+// Calculates payouts for futures hedging with different exit times
 export function calculatePayoutFutureDelay(quantity, spotEntryPrice, futuresEntryPrice, longExitPrice, futureExitPrice, hedgingRatio, twoWeeksVolume) {
     const fees = calculateFEE_RATES(twoWeeksVolume);
     const Q = parseFloat(quantity) || 1;
@@ -117,7 +130,10 @@ export function calculatePayoutFutureDelay(quantity, spotEntryPrice, futuresEntr
     };
 }
 
-// Calculate payouts for Short Position Hedging
+// ===================================
+// Spot Hedging Calculations
+// ===================================
+// Calculates payouts for spot hedging with simultaneous entry/exit
 export function calculatePayoutShort(quantity, spotEntryPrice, spotExitPrice, hedgingRatio, twoWeeksVolume) {
     const fees = calculateFEE_RATES(twoWeeksVolume);
 
@@ -164,6 +180,7 @@ export function calculatePayoutShort(quantity, spotEntryPrice, spotExitPrice, he
     };
 }
 
+// Calculates payouts for spot hedging with different exit times
 export function calculatePayoutShortDelay(Q, P_spot_achat, LongClose, ShortClose, h, twoWeeksVolume) {    
     const fees = calculateFEE_RATES(twoWeeksVolume);
 
@@ -186,6 +203,10 @@ export function calculatePayoutShortDelay(Q, P_spot_achat, LongClose, ShortClose
     };
 }
 
+// ===================================
+// Optimization and Analysis Functions
+// ===================================
+// Calculates the best possible payout based on historical price data
 export const calculateBestPayout = (seriesData, type, quantity, spot_entry_price, futures_entry_price, hedgingRatio, twoWeeksVolume, params={}) => {
     if (!seriesData || seriesData.length === 0) {
         console.error("Empty or invalid seriesData");
@@ -217,7 +238,6 @@ export const calculateBestPayout = (seriesData, type, quantity, spot_entry_price
             h,
             twoWeeksVolume
         ));
-
     } else if (type === 'future') {
         ({ spotPayout: bestSpotPayout, hedgedPayout: bestHedgedPayout } = calculatePayoutFutureDelay(
             quantity,
@@ -228,14 +248,15 @@ export const calculateBestPayout = (seriesData, type, quantity, spot_entry_price
             hedgingRatio,
             twoWeeksVolume
         ));
-    } else if (type === 'result-based') {
-        ({ spotPayout: bestSpotPayout, hedgedPayout: bestHedgedPayout } = calculateUsingParams(
-            Q,
-            Q * (hedgingRatio / 100),
+    } else if (type === 'result-based' && params) {
+        ({ spotPayout: bestSpotPayout, hedgedPayout: bestHedgedPayout } = calculateUsingParamsDelay(
+            params.spotQuantity,
+            params.shortQuantity,
             params.leverage,
             params.fees,
             params.requiredMargin,
-            params.priceVariation,
+            highestClose,
+            lowestClose,
             twoWeeksVolume,
             spot_entry_price
         ));
@@ -243,10 +264,11 @@ export const calculateBestPayout = (seriesData, type, quantity, spot_entry_price
 
     return {
         bestSpotPayout: formatNumber(bestSpotPayout),
-        bestHedgedPayout: formatNumber(bestHedgedPayout),
+        bestHedgedPayout: formatNumber(bestHedgedPayout)
     };
 };
 
+// Calculates optimal parameters for short hedging strategy
 export function calculateShortHedgeParameters({
     spotEntryPrice,
     expectedVariation,
@@ -327,6 +349,10 @@ export function calculateShortHedgeParameters({
     };
 }
 
+// ===================================
+// Parameter-Based Calculations
+// ===================================
+// Calculates hedging results using predefined parameters for simultaneous entry/exit
 export function calculateUsingParams(
     spotQuantity,
     shortQuantity,
@@ -359,6 +385,8 @@ export function calculateUsingParams(
     const hedgedPayout = longPnL + shortPnL - totalFeesCost;
 
     return {
+        spotQuantity: spotQuantity,
+        shortQuantity: shortQuantity,
         spotPayout: spotPayout,
         hedgedPayout: hedgedPayout,
         leverage: leverage,
@@ -367,6 +395,7 @@ export function calculateUsingParams(
     };
 }
 
+// Calculates hedging results using predefined parameters for different exit times
 export function calculateUsingParamsDelay(
     spotQuantity,
     shortQuantity,
