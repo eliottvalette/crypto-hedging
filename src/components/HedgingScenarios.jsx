@@ -226,33 +226,42 @@ const HedgingScenarios = () => {
         }
 
         try {
+            // Calculate values without formatting
+            const longQuantity = parseFloat(quantity);
+            const spotPrice = parseFloat(spotEntryPrice);
+            const hedgeQuantity = hedgeType === 'spot' ? longQuantity * hedgingRatio : longQuantity * hedgingRatio;
+            const hedgePrice = hedgeType === 'spot' ? spotPrice : parseFloat(futuresEntryPrice);
+            const hedgeMargin = hedgeType === 'spot' ? parseFloat(totalInvestedShort) : parseFloat(totalInvestedFuture);
+            const calculatedLeverage = hedgeMargin / (hedgeQuantity * hedgePrice);
+
             const positionData = {
-                id: Date.now(),
                 symbol: symbol.value,
                 longPosition: {
-                    quantity: parseFloat(quantity),
-                    entryPrice: parseFloat(spotEntryPrice),
-                    value: parseFloat(quantity) * parseFloat(spotEntryPrice)
+                    quantity: longQuantity,
+                    entryPrice: spotPrice,
+                    value: longQuantity * spotPrice
                 },
                 hedgePosition: {
                     type: hedgeType,
-                    quantity: hedgeType === 'spot' ? quantity * hedgingRatio : quantity * hedgingRatio,
-                    entryPrice: hedgeType === 'spot' ? spotEntryPrice : futuresEntryPrice,
-                    leverage: hedgeType === 'spot' ? totalInvestedShort / (quantity * hedgingRatio * spotEntryPrice) : totalInvestedFuture / (quantity * hedgingRatio * futuresEntryPrice),
-                    margin: hedgeType === 'spot' ? totalInvestedShort : totalInvestedFuture
+                    quantity: hedgeQuantity,
+                    entryPrice: hedgePrice,
+                    leverage: calculatedLeverage,
+                    margin: hedgeMargin
                 },
-                hedgingRatio: hedgingRatio,
+                hedgingRatio: parseFloat(hedgingRatio),
                 status: 'active',
                 LongclosePrice: null,
                 HedgeclosePrice: null,
-                pnl: null
+                pnl: null,
+                createdAt: new Date(),
+                id: Date.now()
             };
 
+            console.log('Saving position with data:', positionData); // Debug log
             await savePosition(user.uid, positionData);
             setSaveSuccess(true);
             setSaveError('');
 
-            // Reset success message after 3 seconds
             setTimeout(() => {
                 setSaveSuccess(false);
             }, 3000);
