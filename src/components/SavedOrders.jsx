@@ -142,7 +142,7 @@ const SavedOrders = () => {
     };
 
     fetchSavedPositions();
-  }, []);
+  }, [user]);
 
   // Add useEffect for P&L calculation
   useEffect(() => {
