@@ -16,13 +16,14 @@ const EXAMPLE_POSITIONS = [
     hedgePosition: {
       type: 'short',
       quantity: 0.1,
-      entryPrice: 5000,
+      entryPrice: 50000,
       leverage: 10,
       margin: 2500
     },
     hedgingRatio: 0.1,
     status: 'active',
-    closePrice: null,
+    LongclosePrice: null,
+    HedgeclosePrice: null,
     pnl: null
   },
   {
@@ -36,14 +37,14 @@ const EXAMPLE_POSITIONS = [
     hedgePosition: {
       type: 'futures',
       quantity: 1,
-      entryPrice: 600,
+      entryPrice: 3000,
       leverage: 5,
       margin: 600
     },
     hedgingRatio: 0.5,
     status: 'closed',
-    LongclosePrice: 220,
-    HedgeclosePrice: 220,
+    LongclosePrice: 2800,
+    HedgeclosePrice: 2800,
     pnl: null
   },
   {
@@ -57,7 +58,7 @@ const EXAMPLE_POSITIONS = [
     hedgePosition: {
       type: 'short',
       quantity: 10,
-      entryPrice: 33,
+      entryPrice: 100,
       leverage: 3,
       margin: 333
     },
@@ -78,7 +79,7 @@ const EXAMPLE_POSITIONS = [
     hedgePosition: {
       type: 'futures',
       quantity: 5,
-      entryPrice: 50,
+      entryPrice: 250,
       leverage: 2,
       margin: 625
     },
@@ -178,13 +179,15 @@ const SavedOrders = () => {
             try {
               const currentPrice = await getSpotPrice(position.symbol);
               if (!currentPrice) return position;
+              const longClosePrice = position.LongclosePrice || currentPrice;
+              const hedgeClosePrice = position.HedgeclosePrice || currentPrice;
 
               const pnl = position.hedgePosition.type === 'short'
                 ? calculatePayoutShortDelay(
                     position.longPosition.quantity,
                     position.longPosition.entryPrice,
-                    currentPrice,
-                    currentPrice,
+                    longClosePrice,
+                    hedgeClosePrice,
                     position.hedgingRatio,
                     0
                   ).hedgedPayout
@@ -192,8 +195,8 @@ const SavedOrders = () => {
                     position.longPosition.quantity,
                     position.longPosition.entryPrice,
                     position.hedgePosition.entryPrice,
-                    currentPrice,
-                    currentPrice,
+                    longClosePrice,
+                    hedgeClosePrice,
                     position.hedgingRatio,
                     0
                   ).hedgedPayout;
@@ -225,10 +228,15 @@ const SavedOrders = () => {
       );
     };
 
+    // Initial calculation
     calculatePnL();
-    const interval = setInterval(calculatePnL, 10000);
+
+    // Set up interval for periodic calculations
+    const interval = setInterval(calculatePnL, 2000); // Run every 2 seconds
+
+    // Cleanup interval on unmount
     return () => clearInterval(interval);
-  }, [savedPositions, examplePositions]); // Update when positions change
+  }, []); // Empty dependency array since we want it to run on mount only
 
   // Implement missing handler functions
   const handleClosePosition = async (positionId) => {
@@ -305,7 +313,7 @@ const SavedOrders = () => {
               <th>Long Position</th>
               <th>Hedge Details</th>
               <th>Coverage</th>
-              <th>Total Value</th>
+              <th>Close Prices</th>
               <th>Status</th>
               <th>P&L</th>
               <th>Actions</th>
@@ -313,8 +321,6 @@ const SavedOrders = () => {
           </thead>
           <tbody>
             {filteredPositions.map((position) => {
-              const totalValue = position.longPosition.value + position.hedgePosition.margin;
-              
               return (
                 <tr key={position.id}>
                   <td>{position.symbol}</td>
@@ -332,7 +338,16 @@ const SavedOrders = () => {
                     </div>
                   </td>
                   <td>{position.hedgingRatio * 100}%</td>
-                  <td>${formatNumber(totalValue)}</td>
+                  <td>
+                    {position.status === 'closed' ? (
+                      <>
+                        <div>Long: ${formatNumber(position.LongclosePrice)}</div>
+                        <div>Hedge: ${formatNumber(position.HedgeclosePrice)}</div>
+                      </>
+                    ) : (
+                      <span className="pending-close">Pending Close</span>
+                    )}
+                  </td>
                   <td>
                     <span className={`status-${position.status}`}>
                       {position.status.charAt(0).toUpperCase() + position.status.slice(1)}

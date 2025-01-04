@@ -289,15 +289,6 @@ const HedgingScenarios = () => {
                 >
                     Futures Contract
                 </button>
-                {user && (
-                    <button
-                        className="save-button"
-                        onClick={handleSavePosition}
-                        disabled={!spotEntryPrice || !quantity}
-                    >
-                        Save Position
-                    </button>
-                )}
             </div>
     
             {hedgeType === 'spot' ? (
@@ -419,6 +410,15 @@ const HedgingScenarios = () => {
                                     <p>Best Spot Payout: ${formatNumber(bestPayout.bestSpotPayout)}</p>
                                     <p>Best Hedged Payout: ${formatNumber(bestPayout.bestHedgedPayout)}</p>
                                 </div>
+                            )}
+                            {user && (
+                                <button
+                                    className="save-button"
+                                    onClick={handleSavePosition}
+                                    disabled={!spotEntryPrice || !quantity}
+                                >
+                                    Save Position
+                                </button>
                             )}
                         </div>
                     )}
@@ -555,6 +555,15 @@ const HedgingScenarios = () => {
                                 <p>Best Spot Payout: ${formatNumber(bestPayout.bestSpotPayout)}</p>
                                 <p>Best Hedged Payout: ${formatNumber(bestPayout.bestHedgedPayout)}</p>
                             </div>
+                            )}
+                            {user && (
+                                <button
+                                    className="save-button"
+                                    onClick={handleSavePosition}
+                                    disabled={!spotEntryPrice || !quantity}
+                                >
+                                    Save Position
+                                </button>
                             )}
                         </div>
                     )}
