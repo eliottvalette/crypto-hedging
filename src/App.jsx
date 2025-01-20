@@ -16,6 +16,7 @@ function App() {
   useEffect(() => {
     logPageView();
   }, [location]);
+  
   return (
     <UserProvider>
       <div className="App">
