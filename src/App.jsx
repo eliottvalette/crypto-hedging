@@ -1,4 +1,6 @@
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, useLocation} from 'react-router-dom';
+import { logPageView } from './utils/analytics';
+import { useEffect } from 'react';
 import Aside from './components/Aside';
 import Dashboard from './components/Dashboard';
 import ResultBasedCalculator from './components/HedgingScenarios';
@@ -9,6 +11,11 @@ import SavedOrders from './components/SavedOrders';
 import { UserProvider } from './components/UserContext';
 
 function App() {
+  const location = useLocation();
+
+  useEffect(() => {
+    logPageView();
+  }, [location]);
   return (
     <UserProvider>
       <div className="App">
