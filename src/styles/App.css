@@ -1043,6 +1043,118 @@ main {
   }
 }
 
+/* Adjust layout for smaller screens */
+@media (max-width: 768px) {
+  .App {
+    flex-direction: column;
+  }
+
+  aside {
+    position: relative;
+    width: 100%;
+    height: auto;
+    border-right: none;
+    border-bottom: 2px solid var(--color-dark-green);
+    padding: 0; /* Remove padding for aside */
+  }
+
+  .aside-top {
+    text-align: center; /* Center text in aside-top */
+  }
+
+  main {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .header {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .dashboard {
+    padding: 1rem;
+  }
+
+  .chart-container {
+    height: 40vh;
+  }
+
+  .calculator-container {
+    max-width: 90vw;
+  }
+
+  .results-types-container {
+    flex-direction: column;
+  }
+
+  .results-types-container > div {
+    max-width: 100%;
+  }
+
+  .saved-orders {
+    width: 100%;
+    padding: 1rem;
+    overflow-x: auto;
+  }
+
+  .saved-orders table {
+    font-size: 0.85rem;
+  }
+
+  .saved-orders th,
+  .saved-orders td {
+    padding: 0.8rem;
+  }
+
+  .saved-orders .status-active,
+  .saved-orders .status-closed {
+    padding: 0.3rem 0.6rem;
+    font-size: 0.8rem;
+  }
+
+  .saved-orders .filter-buttons {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .saved-orders .filter-button {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+  }
+
+  .auth-button {
+    display: block;
+    margin: 0 auto; /* Center the open account button */
+  }
+}
+
+/* Further adjustments for very small screens */
+@media (max-width: 480px) {
+  .header-button {
+    padding: 0.5rem 1rem;
+    font-size: 0.8rem;
+  }
+
+  .auth-box {
+    padding: 1rem;
+  }
+
+  .auth-input {
+    padding: 0.5rem;
+  }
+
+  .auth-button {
+    padding: 0.5rem;
+    font-size: 0.9rem;
+  }
+
+  .google-button {
+    margin-top: 0.5rem;
+  }
+}
+
 /* Save button in calculator */
 .save-button {
   background: var(--color-light-green);
